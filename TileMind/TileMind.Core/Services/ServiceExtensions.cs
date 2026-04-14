@@ -12,28 +12,31 @@ namespace TileMind.Core.Services
 {
     public static class ServiceExtensions
     {
-        public static void AddBaseServices(this IServiceCollection services)
+
+        extension(IServiceCollection services)
         {
-            services.AddLogging(builder => builder.AddTileMindLogging());
+            public void AddBaseServices()
+            {
+                services.AddLogging(builder => builder.AddTileMindLogging());
 
-            var config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                // 视觉配置文件，当配置发生变化时自动重新加载配置
-                .AddJsonFile("visionsettings.json", optional: true, reloadOnChange: true)
-                .Build();
-            services.AddSingleton<IConfiguration>(config);
+                var config = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    // 视觉配置文件，当配置发生变化时自动重新加载配置
+                    .AddJsonFile("visionsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
+                services.AddSingleton<IConfiguration>(config);
 
-            //注册公共服务
-            services.AddSingleton<ILogger>();
+                //注册公共服务
+                services.AddSingleton<ILogger>();
 
-            //注册视觉服务
-            services.AddScoped<YoloDetectorPoolService>();
-            services.AddScoped<IScreenCaptureService, DxgiScreenCaptureService>();
-            services.AddScoped<FrameFusionService>();
+                //注册视觉服务
+                services.AddScoped<YoloDetectorPoolService>();
+                services.AddScoped<IScreenCaptureService, DxgiScreenCaptureService>();
+                services.AddScoped<FrameFusionService>();
 
-            //注册AI服务
-
+                //注册AI服务
+            }
         }
     }
 }
