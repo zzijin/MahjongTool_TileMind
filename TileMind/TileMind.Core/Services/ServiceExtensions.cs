@@ -17,8 +17,6 @@ namespace TileMind.Core.Services
         {
             public void AddBaseServices()
             {
-                services.AddLogging(builder => builder.AddTileMindLogging());
-
                 var config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
                     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -28,7 +26,7 @@ namespace TileMind.Core.Services
                 services.AddSingleton<IConfiguration>(config);
 
                 //注册公共服务
-                services.AddSingleton<ILogger>();
+                services.AddLogging(builder => builder.AddTileMindLogging());
 
                 //注册视觉服务
                 services.AddScoped<YoloDetectorPoolService>();

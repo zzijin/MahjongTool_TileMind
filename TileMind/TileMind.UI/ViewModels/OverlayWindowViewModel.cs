@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace TileMind.UI.ViewModel
+namespace TileMind.UI.ViewModels
 {
-    public class OverlayWindowViewModel
+    public class OverlayWindowViewModel : ViewModel
     {
     }
 }

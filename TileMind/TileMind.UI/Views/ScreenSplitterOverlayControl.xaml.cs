@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TileMind.UI.View
+namespace TileMind.UI.Views
 {
     /// <summary>
     /// ScreenSplitterOverlayControl.xaml 的交互逻辑

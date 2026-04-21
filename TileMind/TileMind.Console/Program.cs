@@ -8,6 +8,7 @@ using SharpDX;
 using System.Diagnostics;
 using TileMind.Common.Config;
 using TileMind.Common.Logging;
+using TileMind.Core.Services;
 using TileMind.Vision.Detection;
 using TileMind.Vision.ScreenCapture;
 
@@ -89,9 +90,6 @@ namespace TileMind.Console
 
         private static void ConfigureServices(IServiceCollection services)
         {
-            //注册公共服务
-            services.AddLogging(builder => builder.AddTileMindLogging());
-
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
@@ -99,12 +97,13 @@ namespace TileMind.Console
                 .Build();
             services.AddSingleton<IConfiguration>(config);
 
+            //注册公共服务
+            services.AddLogging(builder => builder.AddTileMindLogging());
+
             //注册视觉服务
             services.AddScoped<YoloDetectorPoolService>();
             services.AddScoped<IScreenCaptureService, DxgiScreenCaptureService>();
             services.AddScoped<FrameFusionService>();
-
-            //注册AI服务
         }
     }
 }

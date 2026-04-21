@@ -11,13 +11,14 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Wpf.Ui.Controls;
 
-namespace TileMind.UI.View
+namespace TileMind.UI.Views
 {
     /// <summary>
     /// OverlayWindow.xaml 的交互逻辑
     /// </summary>
-    public partial class OverlayWindow : Window
+    public partial class OverlayWindow : FluentWindow
     {
         public OverlayWindow()
         {
