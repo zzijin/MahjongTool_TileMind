@@ -38,7 +38,7 @@ namespace TileMind.UI
             //注册托管服务
             services.AddHostedService<ApplicationHostService>();
 
-            //services.AddBaseServices();
+            services.AddBaseServices();
 
             //注册UI服务
 
@@ -54,8 +54,9 @@ namespace TileMind.UI
             services.AddSingleton<HomeViewModel>();
             services.AddSingleton<SettingsPage>();
             services.AddSingleton<SettingsViewModel>();
-            //services.AddSingleton<OverlayWindow>();
-            //services.AddSingleton<OverlayWindowViewModel>();
+            services.AddSingleton<OverlayWindow>();
+            services.AddSingleton<OverlayWindowViewModel>();
+            services.AddSingleton<ScreenSplitterOverlayControl>();
 
         }
 

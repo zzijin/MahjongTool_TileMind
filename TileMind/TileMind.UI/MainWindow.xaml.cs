@@ -30,7 +30,7 @@ namespace TileMind.UI
         {
             ViewModel = viewModel;
             _pageProvider = pageProvider;
-            DataContext = ViewModel;
+            DataContext = this;
 
             InitializeComponent();
 

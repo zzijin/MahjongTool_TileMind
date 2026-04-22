@@ -19,8 +19,7 @@
         Foreground="{DynamicResource TextFillColorPrimaryBrush}"
         WindowBackdropType="Mica"
         WindowCornerPreference="Round"
-        WindowStartupLocation="CenterScreen"
-        mc:Ignorable="d">
+        WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- 通常与 TitleBar 配合使用 -->
         <Grid.RowDefinitions>

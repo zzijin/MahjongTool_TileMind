@@ -39,7 +39,7 @@ namespace TileMind.UI.ViewModels
 
         private void InitializeViewModel()
         {
-            ApplicationTitle = "WPF UI - MVVM Demo";
+            ApplicationTitle = "TileMind";
 
             NavigationItems =
             [

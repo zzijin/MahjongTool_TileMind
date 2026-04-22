@@ -25,7 +25,7 @@ namespace TileMind.UI.Views
         public SettingsPage(SettingsViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = ViewModel;
+            DataContext = this;
 
             InitializeComponent();
         }

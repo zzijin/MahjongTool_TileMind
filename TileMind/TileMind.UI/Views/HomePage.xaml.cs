@@ -24,7 +24,7 @@ namespace TileMind.UI.Views
         public HomePage(HomeViewModel viewModel)
         {
             ViewModel = viewModel;
-            DataContext = ViewModel;
+            DataContext = this;
 
             InitializeComponent();
         }
