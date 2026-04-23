@@ -40,13 +40,13 @@ namespace TileMind.Vision.Tools
         /// <summary>
         /// 生成从类别名称到颜色的映射字典
         /// </summary>
-        public static Dictionary<T, Scalar> GenerateColorMap<T>(IList<T> classNames) where T : notnull
+        public static Dictionary<int, Scalar> GenerateColorMap<T>(IList<T> classNames) where T : notnull
         {
             var colors = GenerateDistinctColors(classNames.Count);
-            var map = new Dictionary<T, Scalar>();
+            var map = new Dictionary<int, Scalar>();
             for (int i = 0; i < classNames.Count; i++)
             {
-                map[classNames[i]] = colors[i];
+                map[i] = colors[i];
             }
             return map;
         }

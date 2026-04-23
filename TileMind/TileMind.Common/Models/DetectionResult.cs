@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OpenCvSharp;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TileMind.Common.Helpers;
@@ -8,8 +9,9 @@ namespace TileMind.Common.Models
     /// <summary>
     /// 检测结果类。
     /// </summary>
-    public record class TileDetectionResult
+    public record class DetectionResult
     {
+        
         // 类型ID
         public TileType TileType { get; set; }
         //置信度
@@ -19,5 +21,6 @@ namespace TileMind.Common.Models
 
         //类型名称
         public string TileName => TileType.GetTileName();
+        public int TileTypeId => (int)TileType;
     }
 }

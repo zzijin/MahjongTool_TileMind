@@ -11,6 +11,7 @@ using System.Numerics.Tensors;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using TileMind.Common.Config;
+using TileMind.Common.Models;
 using TileMind.Vision.Tools;
 using static System.Collections.Specialized.BitVector32;
 using static System.Net.Mime.MediaTypeNames;
@@ -408,8 +409,8 @@ namespace TileMind.Vision.Detection
                 // 构造检测结果（置信度等需用 float 存储，因为结果类可能要求 float）
                 detections.Add(new DetectionResult
                 {
-                    ClassId = maxClassIndex,
-                    ClassName = _classNames[maxClassIndex],
+                    TileType = (TileType)maxClassIndex,
+                    //ClassName = _classNames[maxClassIndex],
                     Confidence = float.CreateSaturating(maxConfidence),
                     BoundingBox = new Rect(
                         (int)fX1, (int)fY1,
@@ -475,7 +476,7 @@ namespace TileMind.Vision.Detection
 
             foreach (var det in detections)
             {
-                var color = colorMap[det.ClassName];
+                var color = colorMap[det.TileTypeId];
 
                 // 2. 定义矩形区域
                 var pt1 = new OpenCvSharp.Point(det.BoundingBox.X, det.BoundingBox.Y);
@@ -485,7 +486,7 @@ namespace TileMind.Vision.Detection
                 Cv2.Rectangle(annotatedImage, pt1, pt2, color, 2);
 
                 // 4. 准备标签文本
-                string label = $"{det.ClassName}: {det.Confidence:P1}"; // e.g., "person: 95.5%"
+                string label = $"{det.TileName}: {det.Confidence:P1}"; // e.g., "person: 95.5%"
 
                 // 5. 绘制标签背景
                 int baseline;

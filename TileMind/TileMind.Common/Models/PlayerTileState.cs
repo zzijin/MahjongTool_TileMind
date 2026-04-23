@@ -8,27 +8,27 @@ namespace TileMind.Common.Models
     {
         public PlayerTileState()
         {
-            HandTiles = new List<TileDetectionResult>();
-            DiscardPondTiles = new List<TileDetectionResult>();
-            ChiTiles = new List<TileDetectionResult>();
-            PonTiles = new List<TileDetectionResult>();
-            KanTiles = new List<TileDetectionResult>();
-            AnkanTiles = new List<TileDetectionResult>();
+            HandTiles = new List<DetectionResult>();
+            DiscardPondTiles = new List<DetectionResult>();
+            ChiTiles = new List<DetectionResult>();
+            PonTiles = new List<DetectionResult>();
+            KanTiles = new List<DetectionResult>();
+            AnkanTiles = new List<DetectionResult>();
         }
 
         //手牌状态
-        public List<TileDetectionResult> HandTiles { get; }
+        public List<DetectionResult> HandTiles { get; }
         //牌河
-        public List<TileDetectionResult> DiscardPondTiles { get; }
+        public List<DetectionResult> DiscardPondTiles { get; }
         //吃
-        public List<TileDetectionResult> ChiTiles { get; }
+        public List<DetectionResult> ChiTiles { get; }
         //碰
-        public List<TileDetectionResult> PonTiles { get; }
+        public List<DetectionResult> PonTiles { get; }
         //明杠
-        public List<TileDetectionResult> KanTiles { get; }
+        public List<DetectionResult> KanTiles { get; }
         //暗杠
-        public List<TileDetectionResult> AnkanTiles { get; }
+        public List<DetectionResult> AnkanTiles { get; }
         //副露
-        public IEnumerable<TileDetectionResult> MeldTiles => ChiTiles.Concat(PonTiles).Concat(KanTiles);
+        public IEnumerable<DetectionResult> MeldTiles => ChiTiles.Concat(PonTiles).Concat(KanTiles);
     }
 }

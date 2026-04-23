@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using TileMind.Common.Models;
 
 namespace TileMind.Vision.Detection
 {
@@ -181,8 +182,8 @@ namespace TileMind.Vision.Detection
 
                     detections.Add(new DetectionResult
                     {
-                        ClassId = maxClassIndex,
-                        ClassName = classNames[maxClassIndex],
+                        TileType = (TileType)maxClassIndex,
+                        //ClassName = classNames[maxClassIndex],
                         Confidence = maxConfidence,
                         BoundingBox = new OpenCvSharp.Rect((int)fX1, (int)fY1, (int)(fX2 - fX1), (int)(fY2 - fY1))
                     });
@@ -242,8 +243,8 @@ namespace TileMind.Vision.Detection
 
                     detections.Add(new DetectionResult
                     {
-                        ClassId = maxClassIndex,
-                        ClassName = classNames[maxClassIndex],
+                        TileType = (TileType)maxClassIndex,
+                        //ClassName = classNames[maxClassIndex],
                         Confidence = maxConfidence,
                         BoundingBox = new OpenCvSharp.Rect((int)fX1, (int)fY1, (int)(fX2 - fX1), (int)(fY2 - fY1))
                     });

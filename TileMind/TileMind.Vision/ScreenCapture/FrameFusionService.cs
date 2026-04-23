@@ -4,6 +4,7 @@ using OpenCvSharp;
 using System.Collections.Concurrent;
 using System.Drawing;
 using TileMind.Common.Config;
+using TileMind.Common.Models;
 using TileMind.Vision.Detection;
 
 namespace TileMind.Vision.ScreenCapture
