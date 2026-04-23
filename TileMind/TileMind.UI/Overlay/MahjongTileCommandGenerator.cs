@@ -8,9 +8,9 @@ using TileMind.UI.Overlay.OverlayBase.DrawingCommand;
 
 namespace TileMind.UI.Overlay
 {
-    public class MahjongTileCommandGenerator : IDrawingCommandGenerator<TileDetectionResult>
+    public class MahjongTileCommandGenerator : IDrawingCommandGenerator<DetectionResult>
     {
-        public IEnumerable<IDrawingCommand> GenerateCommands(TileDetectionResult tile)
+        public IEnumerable<IDrawingCommand> GenerateCommands(DetectionResult tile)
         {
             // 1. 绘制牌的外框
             yield return new RectangleCommand

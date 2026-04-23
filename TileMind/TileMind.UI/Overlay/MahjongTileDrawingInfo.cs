@@ -7,9 +7,9 @@ using TileMind.UI.Overlay.OverlayBase.DrawingCommand;
 
 namespace TileMind.UI.Overlay
 {
-    internal class MahjongTileDrawingInfo : DrawingInfo<IList<TileDetectionResult>>
+    internal class MahjongTileDrawingInfo : DrawingInfo<IList<DetectionResult>>
     {
-        public MahjongTileDrawingInfo(IList<TileDetectionResult> data, List<IDrawingCommand> drawingCommands) : base(data, drawingCommands)
+        public MahjongTileDrawingInfo(IList<DetectionResult> data, List<IDrawingCommand> drawingCommands) : base(data, drawingCommands)
         {
 
         }

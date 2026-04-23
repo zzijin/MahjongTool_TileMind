@@ -37,7 +37,6 @@ namespace TileMind.UI.Views
         private void DrawDivisionLines()
         {
             LineCanvas.Children.Clear();
-
             // 获取四个四边形的顶点
             Point[] a = { QuadA.TopLeft, QuadA.TopRight, QuadA.BottomRight, QuadA.BottomLeft };
             Point[] b = { QuadB.TopLeft, QuadB.TopRight, QuadB.BottomRight, QuadB.BottomLeft };
@@ -86,8 +85,6 @@ namespace TileMind.UI.Views
             if (dir.LengthSquared < 0.001) return;
 
             // 寻找射线与多边形各边的交点，且要求交点在射线的正方向上（t >= 0）
-            Point? closestIntersection = null;
-            double minDistance = double.MaxValue;
 
             for (int i = 0; i < 4; i++)
             {

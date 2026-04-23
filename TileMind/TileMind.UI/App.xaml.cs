@@ -48,7 +48,7 @@ namespace TileMind.UI
             services.AddNavigationViewPageProvider();
 
             //注册窗口和页面
-            services.AddSingleton<MainWindow>();
+            //services.AddSingleton<MainWindow>();
             services.AddSingleton<MainWindowViewModel>();
             services.AddSingleton<HomePage>();
             services.AddSingleton<HomeViewModel>();
@@ -57,6 +57,7 @@ namespace TileMind.UI
             services.AddSingleton<OverlayWindow>();
             services.AddSingleton<OverlayWindowViewModel>();
             services.AddSingleton<ScreenSplitterOverlayControl>();
+            services.AddSingleton<ScreenSplitterViewModel>();
 
         }
 
