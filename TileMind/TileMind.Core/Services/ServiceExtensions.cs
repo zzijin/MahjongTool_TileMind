@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using TileMind.Common.Config;
 using TileMind.Common.Logging;
 using TileMind.Vision.Detection;
 using TileMind.Vision.ScreenCapture;
@@ -15,16 +16,26 @@ namespace TileMind.Core.Services
 
         extension(IServiceCollection services)
         {
-            public void AddBaseServices()
+            public void AddBaseConfig()
             {
                 var config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json")
                     // 视觉配置文件，当配置发生变化时自动重新加载配置
-                    .AddJsonFile("visionsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile(YoloOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(ScreenCaptureOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(FrameFusionOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .Build();
-                services.AddSingleton<IConfiguration>(config);
 
+                services.AddOptions();
+                services.AddSingleton<IConfiguration>(config);
+                services.Configure<YoloOptions>(config.GetSection("Yolo"));
+                services.Configure<ScreenCaptureOptions>(config.GetSection("ScreenCapture"));
+                services.Configure<FrameFusionOptions>(config.GetSection("FrameFusion"));
+            }
+
+            public void AddBaseServices()
+            {
                 //注册公共服务
                 services.AddLogging(builder => builder.AddTileMindLogging());
 

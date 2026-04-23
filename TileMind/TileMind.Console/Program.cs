@@ -18,7 +18,7 @@ namespace TileMind.Console
     {
         static void Main(string[] args)
         {
-            var imagePath = @".\testdatas\0250.png";
+            var imagePath = @".\testdatas\0245.png";
 
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -30,7 +30,7 @@ namespace TileMind.Console
 
             var yoloDetector = yoloDetectorPool.Rent();
 
-            //using var image = new Mat(imagePath);
+            using var image = new Mat(imagePath);
 
             for (int i = 0; i < 10; i++)
             {
@@ -46,8 +46,8 @@ namespace TileMind.Console
                 //var detections = yoloDetector.Detect(image);
 
                 //yoloDetector.DetectAndSave(@".\testdatas\0250.png", $@".\testdatas\0250_output_{i}.png");
-                //yoloDetector.DetectAndSave(image, $@".\testdatas\capture_output_{i}.png");
-                var fusionResult = frameFusionService.ProcessFrameFusion();
+                yoloDetector.DetectAndSave(image, $@".\testdatas\capture_output_{i}.png");
+                //var fusionResult = frameFusionService.ProcessFrameFusion();
 
                 stopwatch.Stop();
                 System.Console.WriteLine($"Detection completed {i} in {stopwatch.ElapsedMilliseconds} ms");
@@ -61,28 +61,28 @@ namespace TileMind.Console
         {
             var classFilePath = @".\models\classes.txt";
             var classNames = File.ReadAllLines(classFilePath);
-            var modelPath = @".\models\yolov8m-fp32.onnx";
+            var modelPath = @".\models\yolov8m.onnx";
 
             var visionConfig = new Dictionary<string, string>()
             {
-                [nameof(YoloOptions.ModelPath)] = modelPath,
-                [nameof(YoloOptions.ClassNames)] = string.Join(",", classNames),
-                [nameof(YoloOptions.ConfidenceThreshold)] = "0.40",
-                [nameof(YoloOptions.IouThreshold)] = "0.50",
-                [nameof(YoloOptions.GpuDeviceId)] = "0",
-                [nameof(YoloOptions.InputSize)] = "1280",
-                [nameof(YoloOptions.MinDetectorPoolSize)] = "2",
-                [nameof(YoloOptions.MaxDetectorPoolSize)] = "6",
-                [nameof(YoloOptions.RentTimeoutSeconds)] = "5",
+                [$"Yolo:{nameof(YoloOptions.ModelPath)}"] = modelPath,
+                [$"Yolo:{nameof(YoloOptions.ClassNames)}"] = string.Join(",", classNames),
+                [$"Yolo:{nameof(YoloOptions.ConfidenceThreshold)}"] = "0.40",
+                [$"Yolo:{nameof(YoloOptions.IouThreshold)}"] = "0.50",
+                [$"Yolo:{nameof(YoloOptions.GpuDeviceId)}"] = "0",
+                [$"Yolo:{nameof(YoloOptions.InputSize)}"] = "1280",
+                [$"Yolo:{nameof(YoloOptions.MinDetectorPoolSize)}"] = "2",
+                [$"Yolo:{nameof(YoloOptions.MaxDetectorPoolSize)}"] = "6",
+                [$"Yolo:{nameof(YoloOptions.RentTimeoutSeconds)}"] = "5",
 
-                [nameof(ScreenCaptureOptions.AdapterIndex)] = "0",
-                [nameof(ScreenCaptureOptions.OutputIndex)] = "0",
+                [$"ScreenCapture:{nameof(ScreenCaptureOptions.AdapterIndex)}"] = "0",
+                [$"ScreenCapture:{nameof(ScreenCaptureOptions.OutputIndex)}"] = "0",
 
-                [nameof(FrameFusionOptions.EnableFusion)] = "true",
-                [nameof(FrameFusionOptions.MaxFusionFrameCount)] = "5",
-                [nameof(FrameFusionOptions.MovementThreshold)] = "0.05",
-                [nameof(FrameFusionOptions.FusionConfidenceThreshold)] = "0.40",
-                [nameof(FrameFusionOptions.FusionIouThreshold)] = "0.80",
+                [$"FrameFusion:{nameof(FrameFusionOptions.EnableFusion)}"] = "true",
+                [$"FrameFusion:{nameof(FrameFusionOptions.MaxFusionFrameCount)}"] = "5",
+                [$"FrameFusion:{nameof(FrameFusionOptions.MovementThreshold)}"] = "0.05",
+                [$"FrameFusion:{nameof(FrameFusionOptions.FusionConfidenceThreshold)}"] = "0.40",
+                [$"FrameFusion:{nameof(FrameFusionOptions.FusionIouThreshold)}"] = "0.80",
             };
 
             return visionConfig;
@@ -95,15 +95,15 @@ namespace TileMind.Console
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddInMemoryCollection(GetVisionConfig()) // 添加视觉配置项
                 .Build();
+
+            services.AddOptions();
             services.AddSingleton<IConfiguration>(config);
+            services.Configure<YoloOptions>(config.GetSection("Yolo"));
+            services.Configure<ScreenCaptureOptions>(config.GetSection("ScreenCapture"));
+            services.Configure<FrameFusionOptions>(config.GetSection("FrameFusion"));
 
             //注册公共服务
-            services.AddLogging(builder => builder.AddTileMindLogging());
-
-            //注册视觉服务
-            services.AddScoped<YoloDetectorPoolService>();
-            services.AddScoped<IScreenCaptureService, DxgiScreenCaptureService>();
-            services.AddScoped<FrameFusionService>();
+            services.AddBaseServices();
         }
     }
 }

@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TileMind.UI.ViewModels;
 
 namespace TileMind.UI.Views
 {
@@ -18,8 +19,12 @@ namespace TileMind.UI.Views
     /// </summary>
     public partial class ScreenSplitterOverlayControl : UserControl
     {
-        public ScreenSplitterOverlayControl()
+        ScreenSplitterViewModel _screenSplitterViewModel;
+        public ScreenSplitterOverlayControl(ScreenSplitterViewModel screenSplitterViewModel)
         {
+            _screenSplitterViewModel = screenSplitterViewModel;
+            DataContext = this;
+
             InitializeComponent();
             Loaded += (s, e) => DrawDivisionLines();
         }

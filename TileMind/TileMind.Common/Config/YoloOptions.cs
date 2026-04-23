@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +7,8 @@ namespace TileMind.Common.Config
 {
     public class YoloOptions
     {
+        public const string SettingFilePath = "yolosettings.json";
+
         //模型地址
         public string ModelPath { get; set; } = @".\models\yolov8m-fp32.onnx";
 

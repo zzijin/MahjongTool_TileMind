@@ -38,6 +38,7 @@ namespace TileMind.UI
             //注册托管服务
             services.AddHostedService<ApplicationHostService>();
 
+            services.AddBaseConfig();
             services.AddBaseServices();
 
             //注册UI服务
