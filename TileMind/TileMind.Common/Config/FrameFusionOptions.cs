@@ -6,7 +6,7 @@ namespace TileMind.Common.Config
 {
     public class FrameFusionOptions
     {
-        public const string SettingFilePath = "framefusionsettings.json";
+        public const string SettingFilePath = @".\settings\framefusionsettings.json";
 
         //是否启用帧融合功能，启用后识别准确率可能提升，但会增加处理延迟，建议在性能允许的情况下启用
         public bool EnableFusion { get; set; } = true;

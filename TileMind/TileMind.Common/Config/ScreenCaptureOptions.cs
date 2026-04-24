@@ -7,7 +7,7 @@ namespace TileMind.Common.Config
 {
     public class ScreenCaptureOptions
     {
-        public const string SettingFilePath = "screencapturesettings.json";
+        public const string SettingFilePath = @".\settings\screencapturesettings.json";
 
         //DXGI 适配器索引，通常0表示主显卡
         public int AdapterIndex { get; set; } = 0;

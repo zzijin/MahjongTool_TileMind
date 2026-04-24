@@ -7,7 +7,7 @@ namespace TileMind.Common.Config
 {
     public class YoloOptions
     {
-        public const string SettingFilePath = "yolosettings.json";
+        public const string SettingFilePath = @".\settings\yolosettings.json";
 
         //模型地址
         public string ModelPath { get; set; } = @".\models\yolov8m-fp32.onnx";
