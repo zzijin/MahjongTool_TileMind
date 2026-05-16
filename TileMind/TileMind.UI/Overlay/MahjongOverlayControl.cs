@@ -1,31 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Windows.Media;
 using TileMind.UI.Overlay.OverlayBase;
 using TileMind.UI.Overlay.OverlayBase.DrawingCommand;
 
-namespace TileMind.UI.Overlay
+namespace TileMind.UI.Overlay;
+
+public class MahjongOverlayControl : OverlayBaseControl
 {
-    internal class MahjongOverlayControl : OverlayBaseControl
+    protected override (Brush fillBrush, Pen strokePen) GetDrawingStyles(DrawingInfo info)
     {
+        if (info is PlayerTileDrawingInfo playerInfo)
+            return GetPlayerTileStyles(playerInfo);
 
-        protected override (Brush fillBrush, Pen strokePen) GetDrawingStyles(DrawingInfo info)
-        {
-            return info switch
-            {
-                MahjongTileDrawingInfo tileInfo => GetTileStyles(tileInfo),
-                _ => (Brushes.Transparent, new Pen(Brushes.Transparent, 0))
-            };
-        }
+        // 兼容旧的 MahjongTileDrawingInfo（无玩家信息，默认绿色）
+        if (info is MahjongTileDrawingInfo tileInfo)
+            return GetDefaultTileStyles();
 
-        private (Brush fillBrush, Pen strokePen) GetTileStyles(MahjongTileDrawingInfo drawingInfo)
+        return (Brushes.Transparent, new Pen(Brushes.Transparent, 0));
+    }
+
+    private (Brush fillBrush, Pen strokePen) GetPlayerTileStyles(PlayerTileDrawingInfo info)
+    {
+        var color = info.Seat switch
         {
-            var tile = drawingInfo.SourceInfo;
-            Color color = Colors.LimeGreen ;
-            Brush fill = new SolidColorBrush(Color.FromArgb((byte)(FillOpacity * 255), color.R, color.G, color.B));
-            Pen pen = new Pen(new SolidColorBrush(color), StrokeThickness);
-            return (fill, pen);
-        }
+            Common.Models.SeatPosition.Self     => Colors.LimeGreen,
+            Common.Models.SeatPosition.Right    => Colors.DodgerBlue,
+            Common.Models.SeatPosition.Opposite => Colors.OrangeRed,
+            Common.Models.SeatPosition.Left     => Colors.Gold,
+            _                                  => Colors.LimeGreen
+        };
+
+        byte alpha = (byte)(FillOpacity * 255);
+        var fill = new SolidColorBrush(Color.FromArgb(alpha, color.R, color.G, color.B));
+        var pen = new Pen(new SolidColorBrush(color), StrokeThickness);
+        return (fill, pen);
+    }
+
+    private static (Brush fillBrush, Pen strokePen) GetDefaultTileStyles()
+    {
+        var fill = new SolidColorBrush(Color.FromArgb(76, 50, 205, 50)); // 0.3 * 255 = 76
+        var pen = new Pen(new SolidColorBrush(Colors.LimeGreen), 2);
+        return (fill, pen);
     }
 }

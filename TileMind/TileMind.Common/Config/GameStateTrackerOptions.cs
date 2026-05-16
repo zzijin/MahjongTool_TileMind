@@ -6,6 +6,7 @@ namespace TileMind.Common.Config;
 public class GameStateTrackerOptions
 {
     public const string SettingFilePath = @".\settings\gamestatetrackersettings.json";
+    public const string SectionName = "GameStateTracker";
 
     /// <summary>帧间 tile 匹配的 IoU 阈值。</summary>
     public float MatchIouThreshold { get; set; } = 0.45f;

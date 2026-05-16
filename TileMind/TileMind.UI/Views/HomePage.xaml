@@ -4,7 +4,6 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:local="clr-namespace:TileMind.UI.Views"
       mc:Ignorable="d"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="HomePage"
@@ -15,9 +14,16 @@
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
             <ui:Button
+                Command="{Binding ViewModel.OpenOverlayCommand}"
+                Content="打开识别覆盖层"
+                Icon="{ui:SymbolIcon Symbol=Scan24}"
+                Width="200" Height="48"
+                FontSize="16"
+                Margin="0,0,0,16" />
+            <ui:Button
                 Command="{Binding ViewModel.OpenScreenSplitterCommand}"
                 Content="屏幕区域标定"
-                Icon="{ui:SymbolIcon Symbol=Scan24}"
+                Icon="{ui:SymbolIcon Symbol=Edit24}"
                 Width="200" Height="48"
                 FontSize="16" />
         </StackPanel>

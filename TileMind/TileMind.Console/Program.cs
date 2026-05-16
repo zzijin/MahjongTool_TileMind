@@ -24,8 +24,8 @@ namespace TileMind.Console
             ConfigureServices(services);
             var _serviceProvider = services.BuildServiceProvider();
 
-            //YoloDetectorPoolService_Test(_serviceProvider);
-            GameRecorderService_Test(_serviceProvider);
+            YoloDetectorPoolService_Test(_serviceProvider);
+            //GameRecorderService_Test(_serviceProvider);
 
 
             System.Console.WriteLine("Press Enter to exit...");
@@ -58,7 +58,7 @@ namespace TileMind.Console
                 //var detections = yoloDetector.Detect(imagePath);
                 //var detections = yoloDetector.Detect(image);
 
-                //yoloDetector.DetectAndSave(@".\testdatas\0250.png", $@".\testdatas\0250_output_{i}.png");
+                yoloDetector.DetectAndSave(@".\testdatas\9001.png", $@".\testdatas\9001_output_{i}.png");
                 //yoloDetector.DetectAndSave(image, $@".\testdatas\capture_output_{i}.png");
                 //var fusionResult = frameFusionService.ProcessFrameFusion();
 
@@ -87,7 +87,7 @@ namespace TileMind.Console
         {
             var classFilePath = @".\models\classes.txt";
             var classNames = File.ReadAllLines(classFilePath);
-            var modelPath = @".\models\yolov8m.onnx";
+            var modelPath = @".\models\yolov8m-fp32.onnx";
 
             var visionConfig = new Dictionary<string, string>()
             {
@@ -118,8 +118,9 @@ namespace TileMind.Console
         {
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddInMemoryCollection(GetVisionConfig()) // 添加视觉配置项
+                //.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                //.AddInMemoryCollection(GetVisionConfig()) // 添加视觉配置项
+                .AddJsonFile(YoloOptions.SettingFilePath, optional: true, reloadOnChange: true)
                 .Build();
 
             services.AddOptions();
