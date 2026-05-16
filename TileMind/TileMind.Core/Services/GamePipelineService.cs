@@ -16,17 +16,20 @@ public class GamePipelineService
     private readonly FrameFusionService _frameFusion;
     private readonly GameRecorderService _gameRecorder;
     private readonly ScreenCaptureOptions _screenOpts;
+    private readonly FrameStateHub _frameStateHub;
     private readonly ILogger<GamePipelineService> _logger;
 
     public GamePipelineService(
         FrameFusionService frameFusion,
         GameRecorderService gameRecorder,
         ScreenCaptureOptions screenOpts,
+        FrameStateHub frameStateHub,
         ILogger<GamePipelineService> logger)
     {
         _frameFusion = frameFusion;
         _gameRecorder = gameRecorder;
         _screenOpts = screenOpts;
+        _frameStateHub = frameStateHub;
         _logger = logger;
     }
 
@@ -76,7 +79,10 @@ public class GamePipelineService
         // 1. 按区域路由检测结果
         var frameInput = RouteDetections(fullScreenDetections);
         // 2. 传入对局记录服务
-        return _gameRecorder.ProcessFrame(frameInput);
+        var actions = _gameRecorder.ProcessFrame(frameInput);
+        // 3. 通知 UI 覆盖层
+        _frameStateHub.Publish(frameInput, actions);
+        return actions;
     }
 
     /// <summary>

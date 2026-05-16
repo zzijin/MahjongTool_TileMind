@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using TileMind.Common.Config;
 using TileMind.Common.Helpers;
 using TileMind.Common.Logging;
+using TileMind.Common.Models;
 using TileMind.Vision.Detection;
 using TileMind.Vision.ScreenCapture;
 
@@ -26,9 +27,9 @@ namespace TileMind.Core.Services
 
                 services.AddOptions();
                 services.AddSingleton<IConfiguration>(config);
-                services.Configure<YoloOptions>(config.GetSection("Yolo"));
-                services.Configure<FrameFusionOptions>(config.GetSection("FrameFusion"));
-                services.Configure<GameStateTrackerOptions>(config.GetSection("GameState"));
+                services.Configure<YoloOptions>(config.GetSection(YoloOptions.SectionName));
+                services.Configure<FrameFusionOptions>(config.GetSection(FrameFusionOptions.SectionName));
+                services.Configure<GameStateTrackerOptions>(config.GetSection(GameStateTrackerOptions.SectionName));
 
                 // ScreenCaptureOptions 含 OpenCvSharp.Point[]，MS Config 无法绑定，改用 System.Text.Json 直接加载
                 var screenOpts = SettingConfigExtensions.Load<ScreenCaptureOptions>(
@@ -46,9 +47,12 @@ namespace TileMind.Core.Services
                 services.AddScoped<IScreenCaptureService, DxgiScreenCaptureService>();
                 services.AddScoped<FrameFusionService>();
 
+                //注册事件中枢（连接 Core → UI）
+                services.AddScoped<FrameStateHub>();
+
                 //注册游戏状态追踪服务
-                services.AddSingleton<GameStateTracker>();
-                services.AddSingleton<GameRecorderService>();
+                services.AddScoped<GameStateTracker>();
+                services.AddScoped<GameRecorderService>();
 
                 //注册流水线服务（连接 Vision → Core）
                 services.AddScoped<GamePipelineService>();

@@ -22,7 +22,6 @@ namespace TileMind.UI
     /// </summary>
     public partial class MainWindow : FluentWindow, INavigationWindow
     {
-        private Window? overlayWindow;
         private readonly INavigationViewPageProvider _pageProvider;
         public MainWindowViewModel ViewModel { get; }
 
@@ -34,17 +33,7 @@ namespace TileMind.UI
 
             InitializeComponent();
 
-            // 将 NavigationView 控件与窗口关联（用于导航服务）
             SetPageService(_pageProvider);
-        }
-
-        private void OpenOverlay_Click(object sender, RoutedEventArgs e)
-        {
-            if (overlayWindow == null)
-            {
-                overlayWindow = new OverlayWindow();
-            }
-            overlayWindow.Show();
         }
 
         public INavigationView GetNavigation() => RootNavigation;
