@@ -33,9 +33,10 @@
 ## 核心流程
 
 ```
-屏幕捕获 (DXGI) → 图像分割 (按 ScreenCaptureOptions 区域)
+屏幕捕获 (DXGI)
     → YOLOv8 推理 (ONNX Runtime, GPU)
-    → 多帧融合 (可选, 加权投票)
+    → 多帧融合 (加权投票)
+    → 区域路由 (按 ScreenCaptureOptions 派生区域将检测结果分发至各玩家/区域)
     → 对局状态追踪 (帧间 IoU 匹配, 手牌/副露分离, 动作分类)
     → UI 叠加层显示 / 动作日志记录
 ```
@@ -105,7 +106,7 @@ dotnet run --project TileMind.UI
 | 文件 | 内容 |
 |------|------|
 | `yolosettings.json` | 模型路径、置信度/IoU 阈值、GPU 设备 ID、输入尺寸 |
-| `screencapturesettings.json` | 适配器/显示器索引、牌桌各区域四边形坐标 |
+| `screencapturesettings.json` | 适配器/显示器索引、牌桌各区域四边形坐标。8 个玩家分区（手牌+副露区、弃牌区各 4 个）由 4 个基础区域自动计算，无需手动配置 |
 | `framefusionsettings.json` | 融合帧数、变化阈值、融合置信度 |
 | `gamestatetrackersettings.json` | 追踪 IoU 阈值、miss 容限、手牌/副露分离参数 |
 
@@ -124,7 +125,7 @@ dotnet run --project TileMind.UI
 TileMind/
 ├── TileMind.Common/        # 共享层
 │   ├── Config/             #   配置选项类
-│   ├── Helpers/            #   扩展方法
+│   ├── Helpers/            #   扩展方法 / 几何计算 / 配置加载
 │   ├── Logging/            #   日志配置
 │   └── Models/             #   数据模型
 ├── TileMind.Core/          # 核心层
