@@ -34,6 +34,7 @@ namespace TileMind.Core.Services
                 // ScreenCaptureOptions 含 OpenCvSharp.Point[]，MS Config 无法绑定，改用 System.Text.Json 直接加载
                 var screenOpts = SettingConfigExtensions.Load<ScreenCaptureOptions>(
                     ScreenCaptureOptions.SettingFilePath) ?? new ScreenCaptureOptions();
+                screenOpts.ComputeDerivedAreas();
                 services.AddSingleton(screenOpts);
             }
 

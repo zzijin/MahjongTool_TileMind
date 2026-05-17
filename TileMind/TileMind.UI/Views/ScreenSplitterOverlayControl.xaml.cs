@@ -8,8 +8,6 @@ namespace TileMind.UI.Views;
 
 public partial class ScreenSplitterOverlayControl : UserControl
 {
-    private Point _intersectA, _intersectB, _intersectC, _intersectD;
-
     public ScreenSplitterOverlayControl()
     {
         InitializeComponent();
@@ -27,35 +25,15 @@ public partial class ScreenSplitterOverlayControl : UserControl
     }
 
     /// <summary>
-    /// 将所有区域写入 ScreenCaptureOptions（WPF 相对坐标 → 屏幕绝对坐标 → OpenCvSharp）。
+    /// 将基础区域写入 ScreenCaptureOptions，派生区域由 ComputeDerivedAreas() 自动计算。
     /// </summary>
     public void WriteToOptions(ScreenCaptureOptions options)
     {
         options.DoraIndicatorArea = ToOpenCvPoints(QuadC);
         options.InfoArea = ToOpenCvPoints(QuadD);
         options.TableArea = ToOpenCvPoints(QuadA);
-        // DiscardPondArea 基区域 = QuadB（中央弃牌区外边界，仅供参考）
         options.DiscardPondArea = ToOpenCvPoints(QuadB);
-
-        // 四个玩家弃牌区 = QuadB 与 QuadD 之间的梯形
-        options.SelfDiscardPondArea = ToOpenCvPoints(
-            QuadB.BottomLeft, QuadD.BottomLeft, QuadD.BottomRight, QuadB.BottomRight);
-        options.RightDiscardPondArea = ToOpenCvPoints(
-            QuadB.BottomRight, QuadD.BottomRight, QuadD.TopRight, QuadB.TopRight);
-        options.OppositeDiscardPondArea = ToOpenCvPoints(
-            QuadB.TopRight, QuadD.TopRight, QuadD.TopLeft, QuadB.TopLeft);
-        options.LeftDiscardPondArea = ToOpenCvPoints(
-            QuadB.TopLeft, QuadD.TopLeft, QuadD.BottomLeft, QuadB.BottomLeft);
-
-        // 四个玩家手牌+副露区 = QuadA 与 QuadB 之间的梯形（由延长线交点分割）
-        options.LeftHandAndMeldArea = ToOpenCvPoints(
-            _intersectA, QuadB.TopLeft, QuadB.BottomLeft, _intersectD);
-        options.OppositeHandAndMeldArea = ToOpenCvPoints(
-            _intersectB, QuadB.TopRight, QuadB.TopLeft, _intersectA);
-        options.RightHandAndMeldArea = ToOpenCvPoints(
-            _intersectC, QuadB.BottomRight, QuadB.TopRight, _intersectB);
-        options.SelfHandAndMeldArea = ToOpenCvPoints(
-            _intersectD, QuadB.BottomLeft, QuadB.BottomRight, _intersectC);
+        options.ComputeDerivedAreas();
     }
 
     /// <summary>
@@ -90,11 +68,11 @@ public partial class ScreenSplitterOverlayControl : UserControl
         DrawLine(b[2], d[2], Colors.Red, 1.5);
         DrawLine(b[3], d[3], Colors.Red, 1.5);
 
-        // 蓝延长线: B 各边 → QuadA 边界
-        _intersectA = DrawExtendedLineToBoundary(b[1], b[0], a, Colors.Blue, 1);
-        _intersectB = DrawExtendedLineToBoundary(b[2], b[1], a, Colors.Blue, 1);
-        _intersectC = DrawExtendedLineToBoundary(b[3], b[2], a, Colors.Blue, 1);
-        _intersectD = DrawExtendedLineToBoundary(b[0], b[3], a, Colors.Blue, 1);
+        // 蓝延长线: B 各边 → QuadA 边界（仅用于可视化预览）
+        DrawExtendedLineToBoundary(b[1], b[0], a, Colors.Blue, 1);
+        DrawExtendedLineToBoundary(b[2], b[1], a, Colors.Blue, 1);
+        DrawExtendedLineToBoundary(b[3], b[2], a, Colors.Blue, 1);
+        DrawExtendedLineToBoundary(b[0], b[3], a, Colors.Blue, 1);
     }
 
     private void DrawLine(Point start, Point end, Color color, double thickness)
@@ -108,18 +86,13 @@ public partial class ScreenSplitterOverlayControl : UserControl
         });
     }
 
-    private Point DrawExtendedLineToBoundary(Point start, Point end, Point[] polygon, Color color, double thickness)
+    private void DrawExtendedLineToBoundary(Point start, Point end, Point[] polygon, Color color, double thickness)
     {
-        Point intersect = default;
-        Vector dir = end - start;
-        if (dir.LengthSquared < 0.001) return intersect;
-
         for (int i = 0; i < 4; i++)
         {
-            if (RayIntersectsSegment(start, end, polygon[i], polygon[(i + 1) % 4], out intersect))
+            if (RayIntersectsSegment(start, end, polygon[i], polygon[(i + 1) % 4], out Point intersect))
                 DrawLine(end, intersect, color, thickness);
         }
-        return intersect;
     }
 
     public static bool RayIntersectsSegment(Point rayStart, Point rayPoint,
@@ -165,10 +138,6 @@ public partial class ScreenSplitterOverlayControl : UserControl
             rel[i] = PointFromScreen(absolute[i]);
         return rel;
     }
-
-    /// <summary>WPF 相对坐标 → OpenCvSharp.Point[]（经屏幕绝对坐标）</summary>
-    private OpenCvSharp.Point[] ToOpenCvPoints(Point p0, Point p1, Point p2, Point p3)
-        => ToOpenCvPoints(new[] { p0, p1, p2, p3 });
 
     private OpenCvSharp.Point[] ToOpenCvPoints(QuadrilateralControl quad)
         => ToOpenCvPoints(new[] { quad.TopLeft, quad.TopRight, quad.BottomRight, quad.BottomLeft });
