@@ -1,49 +1,51 @@
-# TileMind
+# Mahjong Tool — 日麻 AI 辅助工具集
+
+基于 YOLOv8 + ONNX Runtime 的实时日麻对局分析与 AI 辅助项目，包含模型训练、数据标注、屏幕识别与对局状态追踪。
 
 ## 项目目录
 
-mahjong_dataset：识别模型训练集
-mahjong_env：识别模型环境
-label_tool：识别模型标注工具
-TileMind：项目主程序
+| 目录 | 说明 |
+|------|------|
+| **[TileMind](./TileMind/README.md)** | 主程序 — 屏幕捕获、YOLOv8 推理、对局状态追踪、WPF 叠加层显示 |
+| **mahjong_dataset/** | YOLOv8 识别模型训练数据集（图片 + 标注） |
+| **mahjong_model/** | 训练实验输出与导出的 ONNX 模型（exp144-m, exp145-s, exp146-n 等） |
+| **mahjong_env/** | Python 训练环境（venv） |
+| **X-AnyLabeling/** | [标注工具](https://github.com/CVHub520/X-AnyLabeling)，用于标注麻将牌数据集 |
+| **runs/** | YOLO 训练运行日志与权重 |
 
-## TileMind
+## 模型训练
 
-### 识别功能
+### 识别类型
 
-**基础模型**
-Yolov8
+共 37 种牌型类别：
 
-**识别类型**
-共37种：
-1-9万：1-9m
-红5万：0m
-1-9索：1-9s
-红5索：0s
-1-9筒：1-9p
-红5筒：0p
-东南西北：1-4z
-白发中：5-7z
+| 类别 | 编号 |
+|------|------|
+| 万子 | 1m–9m, 0m（赤五万） |
+| 索子 | 1s–9s, 0s（赤五索） |
+| 筒子 | 1p–9p, 0p（赤五筒） |
+| 字牌 | 1z–7z（东南西北白发中） |
 
-**标注工具**
-[X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling)
+### 基础模型
 
-### 屏幕截取功能
+YOLOv8（n / s / m），使用 [ultralytics](https://github.com/ultralytics/ultralytics) 框架训练。
 
-### 图形裁剪功能
+### 训练脚本
 
-### 多帧融合功能
+| 文件 | 用途 |
+|------|------|
+| `train.py` | 模型训练入口 |
+| `export_csharp.py` | 导出 ONNX 模型（供 TileMind 推理使用） |
+| `export_label.py` | 导出/转换标注数据 |
 
-### 对局信息记录功能
+### 标注工具
 
-### 对局AI
+使用 [X-AnyLabeling](https://github.com/CVHub520/X-AnyLabeling) 进行 YOLO 格式的麻将牌标注。
 
-### 透明覆盖层绘制
+## TileMind 主程序
 
-### 配置功能
-
-### UI界面
-
-## 工作记录
-
-2026.04.13 已完成覆盖层基础编写，需要整理项目结构，将Service移至Core项目，并自定义相关的结构在Common项目
+详见 **[TileMind/README.md](./TileMind/README.md)**，包含：
+- 架构概览与模块说明
+- 屏幕捕获 → YOLOv8 推理 → 区域路由 → 对局状态追踪 → UI 叠加层的完整流程
+- 构建与运行指南
+- 配置文件说明
