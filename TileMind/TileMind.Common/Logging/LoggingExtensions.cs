@@ -17,21 +17,55 @@ namespace TileMind.Common.Logging
             // 控制台日志 (JSON 格式)
             builder.AddZLoggerConsole(options =>
             {
-                // 输出为 JSON 格式，便于日志系统解析
-                options.UseJsonFormatter(formatter =>
+                options.UsePlainTextFormatter(formatter =>
                 {
-                    // 自定义 JSON 字段
-                    //formatter.IncludeProperties = IncludeProperties.Timestamp |
-                    //                              IncludeProperties.LogLevel |
-                    //                              IncludeProperties.Message;
-                    // 使用 UTC 时间
-                    //formatter.UseUtcTimestamp = true;
+                    // 配置日志前缀：格式为 "时间戳|日志级别|"
+                    formatter.SetPrefixFormatter(
+                        $"{0:yyyy-MM-dd HH:mm:ss.fff}|{1:short}|{2}|",
+                        (in MessageTemplate template, in LogInfo info) =>
+                            template.Format(info.Timestamp, info.LogLevel, info.Category.Name)
+                    );
+
+                    // 配置日志后缀：格式为 " (记录器类别名)"
+                    formatter.SetSuffixFormatter(
+                        $" ({0})",
+                        (in MessageTemplate template, in LogInfo info) =>
+                            template.Format(info.Category)
+                    );
+
+                    // 自定义异常输出格式
+                    formatter.SetExceptionFormatter(
+                        (writer, ex) =>
+                            Utf8StringInterpolation.Utf8String.Format(writer, $"异常: {ex.Message}")
+                    );
                 });
             });
 
             // 轮转文件日志 (按天/大小轮转)
             builder.AddZLoggerRollingFile(options =>
             {
+                options.UsePlainTextFormatter(formatter =>
+                {
+                    // 配置日志前缀：格式为 "时间戳|日志级别|"
+                    formatter.SetPrefixFormatter(
+                        $"{0:yyyy-MM-dd HH:mm:ss.fff}|{1:short}|{2}|",
+                        (in MessageTemplate template, in LogInfo info) =>
+                            template.Format(info.Timestamp, info.LogLevel, info.Category.Name)
+                    );
+
+                    // 配置日志后缀：格式为 " (记录器类别名)"
+                    formatter.SetSuffixFormatter(
+                        $" ({0})",
+                        (in MessageTemplate template, in LogInfo info) =>
+                            template.Format(info.Category)
+                    );
+
+                    // 自定义异常输出格式
+                    formatter.SetExceptionFormatter(
+                        (writer, ex) =>
+                            Utf8StringInterpolation.Utf8String.Format(writer, $"异常: {ex.Message}")
+                    );
+                });
                 // 动态文件路径：Logs/TileMind-20260112-001.log
                 options.FilePathSelector = (timestamp, sequenceNumber) =>
                 {
