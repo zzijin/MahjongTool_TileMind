@@ -36,7 +36,7 @@
               Grid.Row="0"
               FocusOnLeftClick="True"
               MenuOnRightClick="True"
-              TooltipText="WPF UI - MVVM Demo"
+              TooltipText="TileMind"
             >
             <tray:NotifyIcon.Menu>
                 <ContextMenu ItemsSource="{Binding ViewModel.TrayMenuItems, Mode=OneWay}" />
@@ -48,17 +48,8 @@
             x:Name="RootNavigation"
             Grid.Row="1"
             FooterMenuItemsSource="{Binding ViewModel.NavigationFooter, Mode=OneWay}"
+            IsPaneOpen="False"
             MenuItemsSource="{Binding ViewModel.NavigationItems, Mode=OneWay}">
-
-            <ui:NavigationView.AutoSuggestBox>
-                <ui:AutoSuggestBox x:Name="AutoSuggestBox" PlaceholderText="Search">
-                    <ui:AutoSuggestBox.Icon>
-                        <ui:IconSourceElement>
-                            <ui:SymbolIconSource Symbol="Search24" />
-                        </ui:IconSourceElement>
-                    </ui:AutoSuggestBox.Icon>
-                </ui:AutoSuggestBox>
-            </ui:NavigationView.AutoSuggestBox>
 
             <ui:NavigationView.Header>
                 <ui:BreadcrumbBar Margin="42,32,0,0" FontSize="28" FontWeight="DemiBold" />
