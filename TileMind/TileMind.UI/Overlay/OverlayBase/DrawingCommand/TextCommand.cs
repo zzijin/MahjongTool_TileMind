@@ -20,7 +20,6 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
         public TextAlignment Alignment { get; set; } = TextAlignment.Left;
         public bool DrawBackground { get; set; } = true;
 
-        // 用于DPI感知的文本格式化
         private FormattedText CreateFormattedText(double pixelsPerDip)
         {
             return new FormattedText(
@@ -32,38 +31,39 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
                 Foreground,
                 pixelsPerDip)
             {
-                TextAlignment = Alignment
+                // 始终使用 Left，对齐通过手动位移实现。
+                // 在 auto 宽度下 Center/Right 会导致 FormattedText 内部偏移与实际 Width 不一致。
+                TextAlignment = TextAlignment.Left
             };
         }
 
         public void Draw(DrawingContext dc, Brush fillBrush, Pen strokePen)
         {
-            // 获取DPI缩放因子（需要从当前可视化树获取，这里使用静态方法从主窗口获取）
             double pixelsPerDip = VisualTreeHelper.GetDpi(Application.Current.MainWindow).PixelsPerDip;
             var formatted = CreateFormattedText(pixelsPerDip);
 
-            // 根据对齐方式调整绘制位置
-            double offsetX = 0;
-            if (Alignment == TextAlignment.Center)
-                offsetX = -formatted.Width / 2;
-            else if (Alignment == TextAlignment.Right)
-                offsetX = -formatted.Width;
+            double offsetX = Alignment switch
+            {
+                TextAlignment.Center => -formatted.Width / 2,
+                TextAlignment.Right => -formatted.Width,
+                _ => 0
+            };
 
-            Point drawPos = new Point(Position.X + offsetX, Position.Y);
+            // Position 为锚点，textOrigin 是文字+背景的左上角
+            Point textOrigin = new Point(Position.X + offsetX, Position.Y - formatted.Height);
 
-            // 绘制背景
             if (DrawBackground)
             {
                 double padding = 4;
                 Rect bgRect = new Rect(
-                    drawPos.X - padding,
-                    drawPos.Y - formatted.Height - padding,
+                    textOrigin.X - padding,
+                    textOrigin.Y - padding,
                     formatted.Width + 2 * padding,
                     formatted.Height + 2 * padding);
                 dc.DrawRectangle(Background, null, bgRect);
             }
 
-            dc.DrawText(formatted, drawPos);
+            dc.DrawText(formatted, textOrigin);
         }
 
         public Rect GetBounds()

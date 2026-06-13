@@ -34,7 +34,7 @@ namespace TileMind.Console
 
         private static void YoloDetectorPoolService_Test(ServiceProvider serviceProvider)
         {
-            var imagePath = @".\testdatas\0245.png";
+            var imagePath = @".\testdatas\9002.png";
 
             var yoloDetectorPool = serviceProvider.GetRequiredService<YoloDetectorPoolService>();
             var screenCaptureService = serviceProvider.GetRequiredService<IScreenCaptureService>();
@@ -58,7 +58,7 @@ namespace TileMind.Console
                 //var detections = yoloDetector.Detect(imagePath);
                 //var detections = yoloDetector.Detect(image);
 
-                yoloDetector.DetectAndSave(@".\testdatas\9001.png", $@".\testdatas\9001_output_{i}.png");
+                yoloDetector.DetectAndSave(@".\testdatas\9002.png", $@".\testdatas\9002_output_{i}.png");
                 //yoloDetector.DetectAndSave(image, $@".\testdatas\capture_output_{i}.png");
                 //var fusionResult = frameFusionService.ProcessFrameFusion();
 

@@ -29,7 +29,7 @@ namespace TileMind.UI.Overlay.OverlayBase
         // 统一控制覆盖层中所有填充画刷的不透明度
         public static readonly DependencyProperty FillOpacityProperty =
             DependencyProperty.Register(nameof(FillOpacity), typeof(double), typeof(OverlayBaseControl),
-                new FrameworkPropertyMetadata(0.3, FrameworkPropertyMetadataOptions.AffectsRender));
+                new FrameworkPropertyMetadata(0.3, OnRedrawPropertyChanged));
 
         public double FillOpacity
         {
@@ -39,7 +39,7 @@ namespace TileMind.UI.Overlay.OverlayBase
 
         public static readonly DependencyProperty StrokeThicknessProperty =
             DependencyProperty.Register(nameof(StrokeThickness), typeof(double), typeof(OverlayBaseControl),
-                new FrameworkPropertyMetadata(2.0, FrameworkPropertyMetadataOptions.AffectsRender));
+                new FrameworkPropertyMetadata(2.0, OnRedrawPropertyChanged));
 
         public double StrokeThickness
         {
@@ -47,10 +47,37 @@ namespace TileMind.UI.Overlay.OverlayBase
             set => SetValue(StrokeThicknessProperty, value);
         }
 
+        private static void OnRedrawPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ((OverlayBaseControl)d).RefreshAll();
+        }
+
         protected OverlayBaseControl()
         {
             _visuals = new VisualCollection(this);
             //Background = Brushes.Transparent;
+        }
+
+        // 必须将内部 VisualCollection 暴露给 WPF 的视觉树遍历机制，否则绘制的 DrawingVisual 将不可见
+        protected override int VisualChildrenCount => _visuals.Count;
+
+        protected override Visual GetVisualChild(int index)
+        {
+            if (index < 0 || index >= _visuals.Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+            return _visuals[index];
+        }
+
+        // 使覆盖层对鼠标事件透明。
+        // 返回自身命中结果 → WPF 检查到 IsHitTestVisible=False（XAML 设置）后穿透到下层。
+        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+        {
+            return new PointHitTestResult(this, hitTestParameters.HitPoint);
+        }
+
+        protected override GeometryHitTestResult HitTestCore(GeometryHitTestParameters hitTestParameters)
+        {
+            return new GeometryHitTestResult(this, IntersectionDetail.FullyContains);
         }
 
         private static void OnItemsSourceChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -72,12 +99,29 @@ namespace TileMind.UI.Overlay.OverlayBase
 
         private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.OldItems != null)
-                foreach (DrawingInfo item in e.OldItems)
-                    RemoveVisualForItem(item);
-            if (e.NewItems != null)
-                foreach (DrawingInfo item in e.NewItems)
-                    AddVisualForItem(item);
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Reset:
+                    // Clear() 触发的全量重置：先清旧 visual，再重新添加所有项
+                    foreach (var item in _visualMap.Keys.ToList())
+                        RemoveVisualForItem(item);
+                    foreach (DrawingInfo item in (ObservableCollection<DrawingInfo>)sender!)
+                        AddVisualForItem(item);
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                case NotifyCollectionChangedAction.Replace:
+                    if (e.OldItems != null)
+                        foreach (DrawingInfo item in e.OldItems)
+                            RemoveVisualForItem(item);
+                    goto case NotifyCollectionChangedAction.Add;
+
+                case NotifyCollectionChangedAction.Add:
+                    if (e.NewItems != null)
+                        foreach (DrawingInfo item in e.NewItems)
+                            AddVisualForItem(item);
+                    break;
+            }
         }
 
         private void AddVisualForItem(DrawingInfo item)
@@ -138,14 +182,14 @@ namespace TileMind.UI.Overlay.OverlayBase
 
             using (DrawingContext dc = visual.RenderOpen())
             {
-                // 根据是否需要变换来决定是否应用变换
-                if (info is ITransformable transformable && transformable.NeedsTransform)
-                    dc.PushTransform(_renderTransform);
+                // 始终应用坐标系变换（屏幕像素 → WPF DIP）
+                dc.PushTransform(_renderTransform);
 
                 foreach (var cmd in info.DrawingCommands)
                 {
                     cmd.Draw(dc, fillBrush, strokePen);
                 }
+
                 dc.Pop();
             }
         }

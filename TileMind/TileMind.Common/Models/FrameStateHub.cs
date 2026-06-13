@@ -12,6 +12,9 @@ public class FrameStateHub
     /// <summary>Stage 2：状态追踪动作（仅追踪模式）。</summary>
     public event Action<List<MahjongAction>>? ActionsDetected;
 
+    /// <summary>帧耗时（每帧都发，Pipeline 元数据）。</summary>
+    public event Action<FrameTimingInfo>? FrameTiming;
+
     public void PublishAnalysis(AnalyzedFrame analysis)
     {
         FrameAnalyzed?.Invoke(analysis);
@@ -20,5 +23,10 @@ public class FrameStateHub
     public void PublishActions(List<MahjongAction> actions)
     {
         ActionsDetected?.Invoke(actions);
+    }
+
+    public void PublishTiming(FrameTimingInfo timing)
+    {
+        FrameTiming?.Invoke(timing);
     }
 }

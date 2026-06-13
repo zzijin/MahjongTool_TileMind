@@ -28,6 +28,7 @@ namespace TileMind.Core.Services
                 services.AddOptions();
                 services.AddSingleton<IConfiguration>(config);
                 services.AddSingleton(new PipelineOptions());
+                services.AddSingleton(new OverlayOptions());
                 services.Configure<YoloOptions>(config.GetSection(YoloOptions.SectionName));
                 services.Configure<FrameFusionOptions>(config.GetSection(FrameFusionOptions.SectionName));
                 services.Configure<GameStateTrackerOptions>(config.GetSection(GameStateTrackerOptions.SectionName));
