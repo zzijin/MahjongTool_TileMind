@@ -121,7 +121,7 @@ public partial class OverlayWindowViewModel : ViewModel
             {
                 Text = text,
                 Position = new Point(16, 24),
-                FontSize = 12,
+                FontSize = 15,
                 Foreground = new SolidColorBrush(Color.FromArgb(230, 180, 255, 180)),
                 Background = new SolidColorBrush(Color.FromArgb(180, 20, 20, 20))
             };
