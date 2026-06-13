@@ -26,13 +26,13 @@ public partial class OverlayWindow : Window
         // WS_EX_TRANSPARENT: 鼠标穿透（所有鼠标事件传递到下层窗口）
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
 
-        // 将屏幕物理像素坐标系映射到 WPF DIP 坐标系（支持高 DPI）
-        var source = PresentationSource.FromVisual(this);
-        if (source != null)
-        {
-            var matrix = source.CompositionTarget.TransformFromDevice;
-            OverlayControl.SetRenderTransform(matrix);
-        }
+        // 将屏幕物理像素坐标映射到 WPF DIP 坐标（支持高 DPI）
+        var dpi = VisualTreeHelper.GetDpi(this);
+        var origin = PointFromScreen(new Point(0, 0)); // 屏幕原点在 WPF 客户区中的坐标
+        var matrix = new Matrix();
+        matrix.Scale(1.0 / dpi.DpiScaleX, 1.0 / dpi.DpiScaleY);
+        matrix.Translate(origin.X, origin.Y);
+        OverlayControl.SetRenderTransform(matrix);
     }
 
     private void EnsureToolbar()
