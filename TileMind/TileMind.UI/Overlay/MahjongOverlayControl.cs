@@ -8,11 +8,19 @@ public class MahjongOverlayControl : OverlayBaseControl
 {
     protected override (Brush fillBrush, Pen strokePen) GetDrawingStyles(DrawingInfo info)
     {
+        // 区域标记：半透明填充 + 实线边框
+        if (info is ScreenRegionDrawingInfo regionInfo)
+        {
+            var color = regionInfo.FillColor;
+            var fill = new SolidColorBrush(Color.FromArgb(40, color.R, color.G, color.B));
+            var pen = new Pen(new SolidColorBrush(color), 1.5);
+            return (fill, pen);
+        }
+
         if (info is PlayerTileDrawingInfo playerInfo)
             return GetPlayerTileStyles(playerInfo);
 
-        // 兼容旧的 MahjongTileDrawingInfo（无玩家信息，默认绿色）
-        if (info is MahjongTileDrawingInfo tileInfo)
+        if (info is MahjongTileDrawingInfo)
             return GetDefaultTileStyles();
 
         return (Brushes.Transparent, new Pen(Brushes.Transparent, 0));
@@ -37,7 +45,7 @@ public class MahjongOverlayControl : OverlayBaseControl
 
     private static (Brush fillBrush, Pen strokePen) GetDefaultTileStyles()
     {
-        var fill = new SolidColorBrush(Color.FromArgb(76, 50, 205, 50)); // 0.3 * 255 = 76
+        var fill = new SolidColorBrush(Color.FromArgb(76, 50, 205, 50));
         var pen = new Pen(new SolidColorBrush(Colors.LimeGreen), 2);
         return (fill, pen);
     }

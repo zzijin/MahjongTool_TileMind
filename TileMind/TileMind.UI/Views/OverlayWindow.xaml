@@ -13,28 +13,8 @@
         Topmost="True"
         ShowInTaskbar="False">
     <Grid>
-        <!-- 工具栏（左下角） -->
-        <Border CornerRadius="6" Background="#AA1a1a2e" Padding="8"
-                HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="16">
-            <StackPanel Orientation="Horizontal">
-                <Button Content="开始识别" Width="80" Height="30" Margin="0,0,8,0"
-                        Command="{Binding StartPipelineCommand}"
-                        Foreground="White" Background="#204080" BorderBrush="#4488cc"
-                        FontSize="13" />
-                <Button Content="停止" Width="64" Height="30" Margin="0,0,8,0"
-                        Command="{Binding StopPipelineCommand}"
-                        Foreground="White" Background="#804040" BorderBrush="#cc6666"
-                        FontSize="13" />
-                <Button Content="关闭" Width="56" Height="30"
-                        Click="CloseButton_Click"
-                        Foreground="White" Background="#404040" BorderBrush="#666"
-                        FontSize="13" />
-            </StackPanel>
-        </Border>
-
         <!-- 识别覆盖层 -->
-        <overlay:MahjongOverlayControl
-            ItemsSource="{Binding OverlayItems}"
+        <overlay:MahjongOverlayControl x:Name="OverlayControl"
             FillOpacity="0.25"
             StrokeThickness="2"
             IsHitTestVisible="False" />

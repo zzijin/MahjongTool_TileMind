@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using TileMind.Common.Config;
@@ -51,6 +52,9 @@ public class GamePipelineService
     /// </summary>
     public List<MahjongAction> ProcessFrame()
     {
+        var totalSw = Stopwatch.StartNew();
+        var stepSw = Stopwatch.StartNew();
+
         List<DetectionResult> fullScreenDetections;
         try
         {
@@ -61,6 +65,7 @@ public class GamePipelineService
             _logger.LogError(ex, "FrameFusion 处理失败。");
             return new();
         }
+        double fusionMs = stepSw.Elapsed.TotalMilliseconds;
 
         if (fullScreenDetections.Count == 0)
         {
@@ -68,7 +73,7 @@ public class GamePipelineService
             return new();
         }
 
-        return ProcessFrame(fullScreenDetections);
+        return ProcessFrame(fullScreenDetections, fusionMs, totalSw);
     }
 
 
@@ -95,6 +100,9 @@ public class GamePipelineService
     }
 
     public List<MahjongAction> ProcessFrame(List<DetectionResult> fullScreenDetections)
+        => ProcessFrame(fullScreenDetections, 0, null);
+
+    private List<MahjongAction> ProcessFrame(List<DetectionResult> fullScreenDetections, double fusionMs, Stopwatch? totalSw)
     {
         if (fullScreenDetections.Count == 0)
         {
@@ -102,20 +110,25 @@ public class GamePipelineService
             return new();
         }
 
+        var stepSw = Stopwatch.StartNew();
+
         // 1. 区域路由 → FrameDetections
         var frameInput = RouteDetections(fullScreenDetections);
+        double routingMs = stepSw.Elapsed.TotalMilliseconds;
 
         // 2. 静态分析 → AnalyzedFrame（两种模式都执行）
+        stepSw.Restart();
         var analysis = _analyzer.Analyze(frameInput);
+        double analysisMs = stepSw.Elapsed.TotalMilliseconds;
 
         // 3. Stage 1 UI 发布（每帧都发）
         _frameStateHub.PublishAnalysis(analysis);
 
         // 4. 状态追踪（可选）
         List<MahjongAction> actions;
+        stepSw.Restart();
         if (_pipelineOpts.EnableStateTracking)
         {
-            // 无法判定活跃玩家 → 疑似错误帧，跳过追踪（TODO: 待进一步思考阈值）
             if (analysis.ActivePlayer == null)
             {
                 _logger.LogDebug("静态分析无法判定活跃玩家，跳过本帧状态追踪。");
@@ -124,7 +137,6 @@ public class GamePipelineService
             else
             {
                 actions = _gameRecorder.ProcessFrame(analysis);
-                // Stage 2 UI 发布（仅追踪模式）
                 _frameStateHub.PublishActions(actions);
             }
         }
@@ -132,6 +144,17 @@ public class GamePipelineService
         {
             actions = new();
         }
+        double trackingMs = stepSw.Elapsed.TotalMilliseconds;
+
+        double totalMs = totalSw?.Elapsed.TotalMilliseconds ?? fusionMs + routingMs + analysisMs + trackingMs;
+        _frameStateHub.PublishTiming(new FrameTimingInfo
+        {
+            FusionMs = fusionMs,
+            RoutingMs = routingMs,
+            AnalysisMs = analysisMs,
+            TrackingMs = trackingMs,
+            TotalMs = totalMs
+        });
 
         return actions;
     }
