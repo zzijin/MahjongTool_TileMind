@@ -13,10 +13,10 @@ namespace TileMind.Common.Config
         public bool EnableFusion { get; set; } = true;
 
         //最大融合帧数,单次采集这么多帧数后才开始融合,过多可能增加延迟
-        public int MaxFusionFrameCount { get; set; } = 5;
+        public int MaxFusionFrameCount { get; set; } = 3;
 
         //帧间变化阈值，超过此值认为场景发生变化
-        public float MovementThreshold { get; set; } = 0.05f; 
+        public float MovementThreshold { get; set; } = 0.01f; 
 
         //融合置信度，单帧识别结果的置信度必须达到该值才会参与融合
         public float FusionConfidenceThreshold { get; set; } = 0.40f;
