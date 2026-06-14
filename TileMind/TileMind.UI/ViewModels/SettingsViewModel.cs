@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Options;
 using TileMind.Common.Config;
+using TileMind.Common.Helpers;
 
 namespace TileMind.UI.ViewModels;
 
@@ -11,6 +12,9 @@ public partial class SettingsViewModel : ViewModel
 
     [ObservableProperty]
     private string _appVersion = string.Empty;
+
+    [ObservableProperty]
+    private string _statusMessage = string.Empty;
 
     [ObservableProperty]
     private Wpf.Ui.Appearance.ApplicationTheme _currentApplicationTheme = Wpf.Ui.Appearance.ApplicationTheme.Unknown;
@@ -52,6 +56,24 @@ public partial class SettingsViewModel : ViewModel
 
     private static string GetAssemblyVersion()
         => System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? string.Empty;
+
+    [RelayCommand]
+    private void SaveSettings()
+    {
+        try
+        {
+            Overlay.Save();
+            Pipeline.Save();
+            Yolo.Save();
+            Fusion.Save();
+            Tracker.Save();
+            StatusMessage = "Settings saved successfully.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Save failed: {ex.Message}";
+        }
+    }
 
     [RelayCommand]
     private void OnChangeTheme(string parameter)

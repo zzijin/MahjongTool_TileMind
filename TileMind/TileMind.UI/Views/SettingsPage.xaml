@@ -77,6 +77,7 @@
                 <!-- 融合参数 -->
                 <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="融合参数" />
                 <StackPanel Margin="0,6,0,0">
+                    <CheckBox Content="启用多帧融合" IsChecked="{Binding ViewModel.Fusion.EnableFusion}" />
                     <TextBlock Margin="0,4,0,0" Text="融合帧数" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding ViewModel.Fusion.MaxFusionFrameCount}" Margin="0,2,0,4" />
                     <TextBlock Margin="0,4,0,0" Text="场景变化阈值" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
@@ -100,6 +101,17 @@
                     <TextBox Text="{Binding ViewModel.Tracker.RowTolerance}" Margin="0,2,0,4" />
                     <TextBlock Margin="0,4,0,0" Text="副露邻近阈值 (px)" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding ViewModel.Tracker.MeldProximityThreshold}" Margin="0,2,0,4" />
+                </StackPanel>
+
+                <!-- 保存 -->
+                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                    <ui:Button Appearance="Primary"
+                               Command="{Binding ViewModel.SaveSettingsCommand}"
+                               Content="Save"
+                               Icon="{ui:SymbolIcon Save24}" />
+                    <TextBlock Text="{Binding ViewModel.StatusMessage}"
+                               FontSize="13" Margin="12,0,0,0" VerticalAlignment="Center"
+                               Foreground="{DynamicResource SystemFillColorSuccessBrush}" />
                 </StackPanel>
 
             </StackPanel>

@@ -47,6 +47,27 @@ public static class SettingConfigExtensions
             WriteJson(filePath, "Yolo", options);
         }
     }
+    extension(GameStateTrackerOptions options)
+    {
+        public void Save(string filePath = GameStateTrackerOptions.SettingFilePath)
+        {
+            WriteJson(filePath, "GameStateTracker", options);
+        }
+    }
+    extension(OverlayOptions options)
+    {
+        public void Save(string filePath = OverlayOptions.SettingFilePath)
+        {
+            WriteJson(filePath, "Overlay", options);
+        }
+    }
+    extension(PipelineOptions options)
+    {
+        public void Save(string filePath = PipelineOptions.SettingFilePath)
+        {
+            WriteJson(filePath, "Pipeline", options);
+        }
+    }
 
     private static void WriteJson<T>(string filePath, string sectionName, T value)
     {
