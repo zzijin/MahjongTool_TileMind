@@ -26,6 +26,11 @@ public partial class OverlayWindowViewModel : ViewModel
     private IServiceScope? _pipelineScope;
     private Task? _pipelineTask;
 
+    /// <summary>流水线是否正在运行。</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(StartPipelineCommand))]
+    private bool _isPipelineRunning;
+
     /// <summary>覆盖层绘制项集合（绑定到 XAML ItemsSource）。</summary>
     public ObservableCollection<DrawingInfo> OverlayItems { get; } = new();
 
@@ -55,11 +60,14 @@ public partial class OverlayWindowViewModel : ViewModel
         hub.FrameTiming += OnFrameTiming;
     }
 
-    [RelayCommand]
+    private bool CanStartPipeline() => !IsPipelineRunning;
+
+    [RelayCommand(CanExecute = nameof(CanStartPipeline))]
     private void StartPipeline()
     {
         if (_pipelineTask != null) return;
 
+        IsPipelineRunning = true;
         _cts = new CancellationTokenSource();
         _pipelineScope = _serviceProvider.CreateScope();
         var pipeline = _pipelineScope.ServiceProvider.GetRequiredService<GamePipelineService>();
@@ -95,6 +103,7 @@ public partial class OverlayWindowViewModel : ViewModel
         _pipelineTask = null;
         _pipelineScope?.Dispose();
         _pipelineScope = null;
+        IsPipelineRunning = false;
     }
 
     private void OnFrameAnalyzed(AnalyzedFrame analysis)
@@ -212,6 +221,7 @@ public partial class OverlayWindowViewModel : ViewModel
         AddRegionQuad("Left Discard", _screenOpts.LeftDiscardPondArea, Color.FromRgb(200, 180, 80));
 
         AddRegionQuad("Dora Indicator", _screenOpts.DoraIndicatorArea, Colors.Magenta);
+        AddRegionQuad("Info", _screenOpts.InfoArea, Colors.Cyan);
     }
 
     private void AddRegionQuad(string name, OpenCvSharp.Point[] quad, Color color)
