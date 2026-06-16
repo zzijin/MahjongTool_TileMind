@@ -12,9 +12,6 @@ public class AnalyzedFrame
     public List<DetectionResult> DoraIndicatorDetections { get; set; } = new();
     /// <summary>从指示牌推算出的实际宝牌（已去重）。</summary>
     public List<TileType> DoraTiles { get; set; } = new();
-
-    /// <summary>当前帧的活跃玩家（手牌+副露总数 = 14 + 杠数）。null 表示无法判定。</summary>
-    public SeatPosition? ActivePlayer { get; set; }
 }
 
 /// <summary>

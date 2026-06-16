@@ -131,16 +131,8 @@ public class GamePipelineService
         stepSw.Restart();
         if (_pipelineOpts.EnableStateTracking)
         {
-            if (analysis.ActivePlayer == null)
-            {
-                _logger.LogDebug("静态分析无法判定活跃玩家，跳过本帧状态追踪。");
-                actions = new();
-            }
-            else
-            {
-                actions = _gameRecorder.ProcessFrame(analysis);
-                _frameStateHub.PublishActions(actions);
-            }
+            actions = _gameRecorder.ProcessFrame(analysis);
+            _frameStateHub.PublishActions(actions);
         }
         else
         {
