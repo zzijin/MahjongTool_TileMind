@@ -60,42 +60,7 @@ public class FrameAnalyzerService
             };
         }
 
-        // 判定活跃玩家
-        result.ActivePlayer = DetermineActivePlayer(result.Players);
-
         return result;
-    }
-
-    /// <summary>
-    /// 根据规则判定活跃玩家：手牌+副露总数 = 14 + 杠数。
-    /// 若无人精确满足，取总数最大的玩家；若仍无法判定返回 null。
-    /// </summary>
-    private static SeatPosition? DetermineActivePlayer(Dictionary<SeatPosition, PlayerFrameAnalysis> players)
-    {
-        SeatPosition? bestSeat = null;
-        int bestTotal = -1;
-        bool exactMatch = false;
-
-        foreach (var (seat, player) in players)
-        {
-            int total = player.HandTiles.Count + player.Melds.Sum(m => m.Tiles.Count);
-            int kanCount = player.Melds.Count(m =>
-                m.MeldType is MeldType.Kan or MeldType.Ankan or MeldType.Kakan);
-            int expected = 14 + kanCount;
-
-            if (total == expected)
-            {
-                if (!exactMatch) { bestSeat = seat; bestTotal = total; exactMatch = true; }
-                // 多个精确匹配 → 先到先得，后续可改为取 total 最大
-            }
-            else if (!exactMatch && total > bestTotal)
-            {
-                bestSeat = seat;
-                bestTotal = total;
-            }
-        }
-
-        return bestSeat;
     }
 
     /// <summary>
