@@ -10,10 +10,11 @@ namespace TileMind.Algorithm;
 /// </summary>
 public static class TileTypeMapper
 {
-    /// <summary>TileMind TileType → RiichiSharp Tile。</summary>
-    public static Tile ToRiichiSharp(TileType tileType)
+    /// <summary>TileMind TileType → RiichiSharp Tile。Unknown 或越界值返回 null。</summary>
+    public static Tile? ToRiichiSharp(TileType tileType)
     {
         int val = (int)tileType;
+        if (val < 0 || val > 36) return null; // Unknown=-1 或 class index 37+ 越界
         int suit = val / 10;
         int offset = val % 10; // 花色内位置：0-8=牌面1-9，9=赤牌
 
@@ -42,7 +43,11 @@ public static class TileTypeMapper
         return val % 10 == 9 && val / 10 < 3;
     }
 
-    /// <summary>直接从 DetectionResult 提取 RiichiSharp Tile。</summary>
-    public static Tile FromDetection(Common.Models.DetectionResult detection)
+    /// <summary>直接从 DetectionResult 提取 RiichiSharp Tile。背牌返回 null。</summary>
+    public static Tile? FromDetection(Common.Models.DetectionResult detection)
         => ToRiichiSharp(detection.TileType);
+
+    /// <summary>获取 Tile Id，背牌返回 -1（跳过）。</summary>
+    public static int GetTileId(Common.Models.DetectionResult detection)
+        => ToRiichiSharp(detection.TileType)?.Id ?? -1;
 }
