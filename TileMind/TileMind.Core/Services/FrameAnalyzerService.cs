@@ -39,6 +39,9 @@ public class FrameAnalyzerService
 
             var (handDets, meldGroups) = _separator.Separate(handMeldDets, seat);
 
+            // 推断暗杠：2 张同牌 + 两侧大间隙 → 补充为 4 张 Ankan
+            InferAnkans(meldGroups, handDets, seat);
+
             var melds = meldGroups
                 .Where(g => g.Count >= 2)
                 .Select(g => new MeldAnalysis
@@ -85,6 +88,73 @@ public class FrameAnalyzerService
             }
         }
         return false;
+    }
+
+    /// <summary>
+    /// 推断暗杠：副露区中仅有两张同牌 + 两侧大间隙 → 补充为 4 张 Ankan 组。
+    /// 暗杠中间两张朝上可识别，两端背牌不可识别，通过间隙特征推断。
+    /// </summary>
+    private static void InferAnkans(
+        List<List<DetectionResult>> meldGroups, List<DetectionResult> handDets, SeatPosition seat)
+    {
+        bool isHorizontal = seat is SeatPosition.Self or SeatPosition.Opposite;
+
+        foreach (var group in meldGroups.Where(g => g.Count == 2).ToList())
+        {
+            // 两张牌必须同类型
+            if (ActionClassifier.NormalizeTileType(group[0].TileType)
+                != ActionClassifier.NormalizeTileType(group[1].TileType))
+                continue;
+
+            // 计算组内间距和平均 tile 尺寸
+            double pos1 = isHorizontal ? group[0].BoundingBox.X + group[0].BoundingBox.Width / 2.0
+                                       : group[0].BoundingBox.Y + group[0].BoundingBox.Height / 2.0;
+            double pos2 = isHorizontal ? group[1].BoundingBox.X + group[1].BoundingBox.Width / 2.0
+                                       : group[1].BoundingBox.Y + group[1].BoundingBox.Height / 2.0;
+            double avgTileWidth = isHorizontal
+                ? (group[0].BoundingBox.Width + group[1].BoundingBox.Width) / 2.0
+                : (group[0].BoundingBox.Height + group[1].BoundingBox.Height) / 2.0;
+
+            double gapBetween = Math.Abs(pos2 - pos1);
+            if (gapBetween > avgTileWidth * 2.5) continue; // 间距过大 → 不是紧邻的暗杠面牌
+
+            // 检查与相邻牌 / 手牌边界的间隙
+            double gapLeft = double.MaxValue, gapRight = double.MaxValue;
+            foreach (var det in handDets)
+            {
+                double detPos = isHorizontal ? det.BoundingBox.X + det.BoundingBox.Width / 2.0
+                                             : det.BoundingBox.Y + det.BoundingBox.Height / 2.0;
+                if (detPos < pos1) gapLeft = Math.Min(gapLeft, pos1 - detPos);
+                if (detPos > pos2) gapRight = Math.Min(gapRight, detPos - pos2);
+            }
+            foreach (var other in meldGroups.Where(g => g != group))
+            {
+                foreach (var det in other)
+                {
+                    double detPos = isHorizontal ? det.BoundingBox.X + det.BoundingBox.Width / 2.0
+                                                 : det.BoundingBox.Y + det.BoundingBox.Height / 2.0;
+                    if (detPos < pos1) gapLeft = Math.Min(gapLeft, pos1 - detPos);
+                    if (detPos > pos2) gapRight = Math.Min(gapRight, detPos - pos2);
+                }
+            }
+
+            // 两侧各有足够间隙 → 推断存在背牌
+            if (gapLeft > avgTileWidth * 1.5 && gapRight > avgTileWidth * 1.5)
+            {
+                // 补充为 4 张：复制两张面牌作为背牌的占位
+                var faceDown = group.Select(d =>
+                {
+                    var clone = new DetectionResult
+                    {
+                        TileType = d.TileType, // 类型继承面牌
+                        BoundingBox = d.BoundingBox, // 近似位置
+                        Confidence = d.Confidence,
+                    };
+                    return clone;
+                }).ToList();
+                group.AddRange(faceDown);
+            }
+        }
     }
 
     /// <summary>

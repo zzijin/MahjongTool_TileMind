@@ -7,13 +7,18 @@ namespace TileMind.Algorithm;
 /// <summary>
 /// 将 TileMind 的 AnalyzedFrame 数据转换为 RiichiSharp 牌谱字符串格式。
 /// 格式："123m456p789s112z"，副露用括号 "(123m)" 或 "[1111m]"。
+/// 背牌 (Unknown) 在转换时被过滤掉。
 /// </summary>
 public static class HandStringBuilder
 {
+    /// <summary>批量转换 DetectionResult，过滤背牌/nil。</summary>
+    private static List<Tile> ToTiles(IEnumerable<DetectionResult> dets)
+        => dets.Select(TileTypeMapper.FromDetection).Where(t => t != null).Select(t => t!.Value).ToList();
+
     /// <summary>从玩家手牌构建牌谱字符串（13 或 14 张）。</summary>
     public static string BuildHandString(List<DetectionResult> handTiles)
     {
-        var tiles = handTiles.Select(TileTypeMapper.FromDetection).ToList();
+        var tiles = ToTiles(handTiles);
         return TilesToString(tiles);
     }
 
@@ -24,13 +29,13 @@ public static class HandStringBuilder
         var sb = new StringBuilder();
 
         // 手牌部分
-        var handTiles = player.HandTiles.Select(TileTypeMapper.FromDetection).ToList();
+        var handTiles = ToTiles(player.HandTiles);
         sb.Append(TilesToString(handTiles));
 
         // 副露部分（明顺/明刻/明杠加圆括号，暗杠加方括号）
         foreach (var meld in player.Melds)
         {
-            var meldTiles = meld.Tiles.Select(TileTypeMapper.FromDetection).OrderBy(t => t.Id).ToList();
+            var meldTiles = ToTiles(meld.Tiles).OrderBy(t => t.Id).ToList();
             string meldStr = TilesToString(meldTiles);
             char bracket = meld.MeldType switch
             {
@@ -62,7 +67,7 @@ public static class HandStringBuilder
 
         // 所有玩家的弃牌
         foreach (var (_, pondDets) in analysis.DiscardPondDetections)
-            allVisible.AddRange(pondDets.Select(TileTypeMapper.FromDetection));
+            allVisible.AddRange(ToTiles(pondDets));
 
         // 所有玩家的副露（暗杠除外，不可见）
         foreach (var (_, player) in analysis.Players)
@@ -70,12 +75,12 @@ public static class HandStringBuilder
             foreach (var meld in player.Melds)
             {
                 if (meld.MeldType != MeldType.Ankan)
-                    allVisible.AddRange(meld.Tiles.Select(TileTypeMapper.FromDetection));
+                    allVisible.AddRange(ToTiles(meld.Tiles));
             }
         }
 
         // 宝牌指示牌
-        allVisible.AddRange(analysis.DoraIndicatorDetections.Select(TileTypeMapper.FromDetection));
+        allVisible.AddRange(ToTiles(analysis.DoraIndicatorDetections));
 
         return TilesToString(allVisible);
     }

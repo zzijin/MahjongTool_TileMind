@@ -70,13 +70,14 @@ public class TileAnalysisService
         {
             var winTile = TileTypeMapper.ToTileMind(wait);
             var rsTile = TileTypeMapper.ToRiichiSharp(winTile);
+            if (rsTile == null) continue;
             string scoringHand = HandStringBuilder.BuildScoringHandString(self) +
-                                 rsTile.Number + SuitChar(rsTile.Suit);
+                                 rsTile.Value.Number + SuitChar(rsTile.Value.Suit);
 
             var ctx = new GameContext
             {
                 WinType = WinType.Tsumo,
-                WinningTile = rsTile,
+                WinningTile = rsTile.Value,
                 RoundWind = RiichiSharp.Tiles.Tile.East,
                 SeatWind = RiichiSharp.Tiles.Tile.East,
                 AkaCount = akaCount,
@@ -142,33 +143,38 @@ public class TileAnalysisService
         var known = new int[34];
         CountTiles(known, selfHandStr);
 
+        // 本家副露
         if (analysis.Players.TryGetValue(SeatPosition.Self, out var self))
-        {
-            foreach (var meld in self.Melds)
-                foreach (var det in meld.Tiles)
-                    known[(int)TileTypeMapper.ToRiichiSharp(det.TileType).Id]++;
-        }
+            foreach (var det in self.Melds.SelectMany(m => m.Tiles))
+                AddKnown(known, det);
 
-        foreach (var (_, pondDets) in analysis.DiscardPondDetections)
-            foreach (var det in pondDets)
-                known[(int)TileTypeMapper.ToRiichiSharp(det.TileType).Id]++;
+        // 所有弃牌
+        foreach (var det in analysis.DiscardPondDetections.Values.SelectMany(d => d))
+            AddKnown(known, det);
 
+        // 其他玩家副露
         foreach (var (seat, player) in analysis.Players)
         {
             if (seat == SeatPosition.Self) continue;
-            foreach (var meld in player.Melds)
-                foreach (var det in meld.Tiles)
-                    known[(int)TileTypeMapper.ToRiichiSharp(det.TileType).Id]++;
+            foreach (var det in player.Melds.SelectMany(m => m.Tiles))
+                AddKnown(known, det);
         }
 
+        // 宝牌指示牌
         foreach (var det in analysis.DoraIndicatorDetections)
-            known[(int)TileTypeMapper.ToRiichiSharp(det.TileType).Id]++;
+            AddKnown(known, det);
 
         var result = new Dictionary<TileType, int>();
         for (int i = 0; i < 34; i++)
             result[TileTypeMapper.ToTileMind(new RiichiSharp.Tiles.Tile((byte)i))] = Math.Max(0, 4 - known[i]);
 
         return result;
+    }
+
+    private static void AddKnown(int[] known, Common.Models.DetectionResult det)
+    {
+        int id = TileTypeMapper.GetTileId(det);
+        if (id >= 0) known[id]++;
     }
 
     private static void CountTiles(int[] known, string handStr)
