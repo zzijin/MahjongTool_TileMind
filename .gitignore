@@ -649,3 +649,11 @@ __marimo__/
 .streamlit/secrets.toml
 
 ## My custom ignores
+/Train/mahjong_model
+/Train/runs
+/Train/mahjong_dataset
+/Train/mahjong_env
+/X-AnyLabeling/dataset
+/X-AnyLabeling/X-AnyLabeling-CPU.exe
+/Train/*.pt
+/TileMind/skills-lock.json
