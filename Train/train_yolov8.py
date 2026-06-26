@@ -7,18 +7,18 @@ if __name__ == '__main__':
      # YOLOv8l (Large)  精度优先。适用于复杂环境下的精细检测，如小目标或高难度任务，但对算力要求也更高
      # YOLOv8x (XLarge) 极致精度。面向对精度有顶级要求的科研或高端工业应用，需要非常强大的GPU算力支持
 
-    model = YOLO('yolov8n.pt') 
+    model = YOLO('yolov8n.pt')
 
     # 训练模型
     model.train(
         # --- 核心参数 ---
         data='mahjong_dataset/dataset.yaml',
         imgsz=1280,     # 改为 1280 或 640，根据识别准确率调整
-        batch=12,        # 增大 imgsz 后需要减小 batch
+        batch=10,        # 增大 imgsz 后需要减小 batch
 
          # --- 显存优化 ---
         amp=True,       # 16位混合精度训练，能加速训练并节省显存，适合支持的GPU
-        workers=20,     # 数据加载线程数，根据CPU核心数调整，过多可能导致系统不稳定
+        workers=16,     # 数据加载线程数，根据CPU核心数调整，过多可能导致系统不稳定
 
         # --- 置信度与精度优化 ---
         # batch=2-4时，AdamW收敛更快，在小批量上优势明显
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         patience=50,                    # 早停机制，连续50轮没有提升就停止训练
         save=True,                      # 保存训练checkpoints和最佳模型
         project='mahjong_model',        # 可选：指定保存目录
-        name='exp1'                     # 可选：指定本次实验名称 
+        name='v8-exp3'                  # 314张 label01+02+03 三组合并
     )
 
     # 验证模型
