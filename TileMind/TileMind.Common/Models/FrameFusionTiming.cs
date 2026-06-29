@@ -7,6 +7,9 @@ public class FrameFusionTiming
 {
     public double CaptureMs { get; set; }
     public double DetectMs { get; set; }
+    public double YoloPreprocessMs { get; set; }
+    public double YoloInferenceMs { get; set; }
+    public double YoloPostprocessMs { get; set; }
     public double FusionMs { get; set; }
     public double TotalMs { get; set; }
 }

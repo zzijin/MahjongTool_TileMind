@@ -7,8 +7,14 @@ public class FrameTimingInfo
 {
     /// <summary>屏幕截取耗时。</summary>
     public double CaptureMs { get; set; }
-    /// <summary>YOLO 推理耗时。</summary>
+    /// <summary>YOLO 推理总耗时。</summary>
     public double DetectMs { get; set; }
+    /// <summary>YOLO 预处理耗时。</summary>
+    public double YoloPreprocessMs { get; set; }
+    /// <summary>YOLO ONNX 推理耗时。</summary>
+    public double YoloInferenceMs { get; set; }
+    /// <summary>YOLO 后处理/NMS 耗时。</summary>
+    public double YoloPostprocessMs { get; set; }
     /// <summary>多帧融合耗时。</summary>
     public double FusionMs { get; set; }
     public double RoutingMs { get; set; }
