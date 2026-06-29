@@ -135,14 +135,31 @@ namespace TileMind.Vision.ScreenCapture
             }
             double totalCaptureMs = stepSw.Elapsed.TotalMilliseconds;
 
-            // 4. Run YOLO detection on all frames in parallel
+            // 4. Run YOLO detection on all frames in parallel, collect sub-timings
             stepSw.Restart();
+            double yoloPreprocessMs = 0, yoloInferenceMs = 0, yoloPostprocessMs = 0;
             var detectionTasks = frames.Select(frame =>
                 Task.Run<List<DetectionResult>>(async () =>
                 {
                     var detector = await _detectorPool.RentAsync();
                     if (detector == null) return new List<DetectionResult>();
-                    try { return detector.Detect(frame); }
+                    try
+                    {
+                        var result = detector.Detect(frame);
+                        var t = detector.LastTiming;
+                        if (t != null)
+                        {
+                            yoloPreprocessMs += t.PreprocessMs;
+                            yoloInferenceMs += t.InferenceMs;
+                            yoloPostprocessMs += t.PostprocessMs;
+                        }
+                        return result;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error during YOLO detection.");
+                        return new List<DetectionResult>();
+                    }
                     finally { _detectorPool.Return(detector); }
                 })).ToArray();
 
@@ -171,6 +188,9 @@ namespace TileMind.Vision.ScreenCapture
             {
                 CaptureMs = totalCaptureMs,
                 DetectMs = detectMs,
+                YoloPreprocessMs = yoloPreprocessMs,
+                YoloInferenceMs = yoloInferenceMs,
+                YoloPostprocessMs = yoloPostprocessMs,
                 FusionMs = fuseMs,
                 TotalMs = totalSw.Elapsed.TotalMilliseconds
             };

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
@@ -40,6 +41,9 @@ namespace TileMind.Vision.Detection
         private readonly string[] _classNames;
 
         private bool _disposed = false;
+
+        /// <summary>最近一次 Detect 调用的内部耗时（预处理/推理/后处理，毫秒）。</summary>
+        public YoloDetectTiming? LastTiming { get; private set; }
 
         /// <summary>
         /// 初始化 YOLOv8 检测器。
@@ -119,17 +123,19 @@ namespace TileMind.Vision.Detection
             _outputType = outputInfo.ElementType;
         }
 
-        public void DetectAndSave(string imagePath, string outputPath)
+        public List<DetectionResult> DetectAndSave(string imagePath, string outputPath)
         {
             using var image = new Mat(imagePath);
             var detections = Detect(image);
             SaveDetections(image, detections, outputPath);
+            return detections;
         }
 
-        public void DetectAndSave(Mat image, string outputPath)
+        public List<DetectionResult> DetectAndSave(Mat image, string outputPath)
         {
             var detections = Detect(image);
             SaveDetections(image, detections, outputPath);
+            return detections;
         }
 
         /// <summary>
@@ -152,6 +158,8 @@ namespace TileMind.Vision.Detection
             // 记录原始图像尺寸，用于将预测坐标缩放回原图
             var originalWidth = image.Width;
             var originalHeight = image.Height;
+
+            var preprocessSw = Stopwatch.StartNew();
 
             // --- 图像预处理 ---
             List<NamedOnnxValue> inputs;
@@ -180,30 +188,36 @@ namespace TileMind.Vision.Detection
                     }
             }
 
+            double preprocessMs = preprocessSw.Elapsed.TotalMilliseconds;
+
             // --- 执行推理 ---
+            var inferenceSw = Stopwatch.StartNew();
             using var results = _session.Run(inputs);
+            double inferenceMs = inferenceSw.Elapsed.TotalMilliseconds;
 
             // --- 后处理 (解析输出 + NMS) ---
+            var postprocessSw = Stopwatch.StartNew();
+            List<DetectionResult> result;
             switch (_outputType)
             {
                 case Type t when t == typeof(float):
                     {
                         var outputTensor = results.First(x => x.Name == _outputName).AsTensor<float>();
-                        var detections = PostprocessOutput<float>(outputTensor, originalWidth, originalHeight);
-                        return detections;
+                        result = PostprocessOutput<float>(outputTensor, originalWidth, originalHeight);
+                        break;
                     }
                 //当前模型返回值为Microsoft.ML.OnnxRuntime.Float16，暂不支持Half类型输入
                 case Type t when t == typeof(Half):
                     {
                         var outputTensor = results.First(x => x.Name == _outputName).AsTensor<Half>();
-                        var detections = PostprocessOutput<Half>(outputTensor, originalWidth, originalHeight);
-                        return detections;
+                        result = PostprocessOutput<Half>(outputTensor, originalWidth, originalHeight);
+                        break;
                     }
                 case Type t when t == typeof(Microsoft.ML.OnnxRuntime.Float16):
                     {
                         var outputTensor = results.First(x => x.Name == _outputName).AsTensor<Microsoft.ML.OnnxRuntime.Float16>();
-                        var detections = this.PostprocessOutputFloat16(outputTensor, originalWidth, originalHeight, _classNames, _confidenceThreshold, _outputWidth, _outputHeight, ApplyNms);
-                        return detections;
+                        result = this.PostprocessOutputFloat16(outputTensor, originalWidth, originalHeight, _classNames, _confidenceThreshold, _outputWidth, _outputHeight, ApplyNms);
+                        break;
                     }
                 default:
                     {
@@ -211,6 +225,15 @@ namespace TileMind.Vision.Detection
                         throw new NotSupportedException($"不支持的Yolo模型输出类型: {_outputType}");
                     }
             }
+            double postprocessMs = postprocessSw.Elapsed.TotalMilliseconds;
+
+            LastTiming = new YoloDetectTiming
+            {
+                PreprocessMs = preprocessMs,
+                InferenceMs = inferenceMs,
+                PostprocessMs = postprocessMs
+            };
+            return result;
         }
 
         /// <summary>
@@ -290,7 +313,7 @@ namespace TileMind.Vision.Detection
             }
 
             // 计算缩放和偏移量（使用 float 精度，因为涉及像素尺寸）
-            float scale = Math.Min((float) _outputWidth / originalWidth, (float)_outputHeight / originalHeight);
+            float scale = Math.Min((float)_outputWidth / originalWidth, (float)_outputHeight / originalHeight);
             float scaledWidth = originalWidth * scale;
             float scaledHeight = originalHeight * scale;
             float offsetX = (_outputWidth - scaledWidth) / 2f;
@@ -515,5 +538,13 @@ namespace TileMind.Vision.Detection
             }
             GC.SuppressFinalize(this);
         }
+    }
+
+    /// <summary>YoloDetector 单次推理的环节耗时（毫秒）。</summary>
+    public class YoloDetectTiming
+    {
+        public double PreprocessMs { get; set; }
+        public double InferenceMs { get; set; }
+        public double PostprocessMs { get; set; }
     }
 }
