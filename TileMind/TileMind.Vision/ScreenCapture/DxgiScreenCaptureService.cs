@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OpenCvSharp;
 using SharpDX;
 using SharpDX.Direct3D11;
@@ -35,9 +34,9 @@ namespace TileMind.Vision.ScreenCapture
         private readonly int _adapterIndex;
         private readonly int _outputIndex;
 
-        public DxgiScreenCaptureService(IOptionsSnapshot<ScreenCaptureOptions> options, ILogger<DxgiScreenCaptureService> logger)
+        public DxgiScreenCaptureService(ScreenCaptureOptions options, ILogger<DxgiScreenCaptureService> logger)
         {
-            var opts = options.Value;
+            var opts = options;
             _adapterIndex = opts.AdapterIndex;
             _outputIndex = opts.OutputIndex;
             _logger = logger;

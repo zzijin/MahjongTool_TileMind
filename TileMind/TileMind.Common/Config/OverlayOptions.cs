@@ -6,6 +6,7 @@ namespace TileMind.Common.Config;
 public class OverlayOptions
 {
     public const string SettingFilePath = @".\settings\overlaysettings.json";
+    public const string SectionName = "Overlay";
 
     /// <summary>识别框显示：所有检测到的牌的矩形框和牌名标签。</summary>
     public bool ShowDetectionBoxes { get; set; } = true;

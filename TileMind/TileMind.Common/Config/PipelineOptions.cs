@@ -6,6 +6,7 @@ namespace TileMind.Common.Config;
 public class PipelineOptions
 {
     public const string SettingFilePath = @".\settings\pipelinesettings.json";
+    public const string SectionName = "Pipeline";
 
     /// <summary>Enable cross-frame game state tracking. When false, only static analysis runs.</summary>
     public bool EnableStateTracking { get; set; } = true;

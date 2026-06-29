@@ -160,6 +160,9 @@ public class GamePipelineService
         {
             CaptureMs = fusionTiming?.CaptureMs ?? 0,
             DetectMs = fusionTiming?.DetectMs ?? 0,
+            YoloPreprocessMs = fusionTiming?.YoloPreprocessMs ?? 0,
+            YoloInferenceMs = fusionTiming?.YoloInferenceMs ?? 0,
+            YoloPostprocessMs = fusionTiming?.YoloPostprocessMs ?? 0,
             FusionMs = fusionTiming?.FusionMs ?? fusionTotalMs,
             RoutingMs = routingMs,
             AnalysisMs = analysisMs,

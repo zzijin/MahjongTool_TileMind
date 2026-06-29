@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
@@ -15,7 +14,7 @@ namespace TileMind.Vision.Detection
     /// </summary>
     public class YoloDetectorPoolService : IDisposable
     {
-        private readonly IOptionsSnapshot<YoloOptions> _options;
+        private readonly YoloOptions _options;
         private readonly ILogger<YoloDetectorPoolService> _logger;
         private readonly ILogger<YoloDetector> _detectorLogger;
 
@@ -33,13 +32,13 @@ namespace TileMind.Vision.Detection
         private readonly object _writeLocker = new object();
         private bool _disposed;
 
-        public YoloDetectorPoolService(IOptionsSnapshot<YoloOptions> options, ILogger<YoloDetectorPoolService> poolLogger, ILogger<YoloDetector> detectorLogger)
+        public YoloDetectorPoolService(YoloOptions options, ILogger<YoloDetectorPoolService> poolLogger, ILogger<YoloDetector> detectorLogger)
         {
             _options = options;
             _logger = poolLogger;
             _detectorLogger = detectorLogger;
 
-            var opts = options.Value;
+            var opts = options;
             _modelPath = opts.ModelPath;
             _classNames = opts.ClassNames;
             _confidenceThreshold = opts.ConfidenceThreshold;

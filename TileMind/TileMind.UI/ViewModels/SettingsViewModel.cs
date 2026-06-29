@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Extensions.Options;
 using TileMind.Common.Config;
 using TileMind.Common.Helpers;
 
@@ -29,19 +28,19 @@ public partial class SettingsViewModel : ViewModel
     public GameStateTrackerOptions Tracker { get; }
 
     public SettingsViewModel(
-        IOptions<OverlayOptions> overlay,
-        IOptions<PipelineOptions> pipeline,
-        IOptions<ScreenCaptureOptions> screenCapture,
-        IOptions<YoloOptions> yolo,
-        IOptions<FrameFusionOptions> fusion,
-        IOptions<GameStateTrackerOptions> tracker)
+        OverlayOptions overlay,
+        PipelineOptions pipeline,
+        ScreenCaptureOptions screenCapture,
+        YoloOptions yolo,
+        FrameFusionOptions fusion,
+        GameStateTrackerOptions tracker)
     {
-        Overlay = overlay.Value;
-        Pipeline = pipeline.Value;
-        ScreenCapture = screenCapture.Value;
-        Yolo = yolo.Value;
-        Fusion = fusion.Value;
-        Tracker = tracker.Value;
+        Overlay = overlay;
+        Pipeline = pipeline;
+        ScreenCapture = screenCapture;
+        Yolo = yolo;
+        Fusion = fusion;
+        Tracker = tracker;
     }
 
     public override void OnNavigatedTo()
