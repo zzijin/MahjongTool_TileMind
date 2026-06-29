@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
@@ -53,10 +52,10 @@ namespace TileMind.Vision.Detection
         /// <param name="confidenceThreshold">置信度阈值，低于此值的检测框将被忽略。</param>
         /// <param name="iouThreshold">交并比(IoU)阈值，用于非极大值抑制(NMS)。</param>
         /// <param name="useCuda">是否尝试使用 CUDA GPU 加速。</param>
-        public YoloDetector(IOptionsSnapshot<YoloOptions> options, ILogger<YoloDetector> logger)
+        public YoloDetector(YoloOptions options, ILogger<YoloDetector> logger)
         {
             _logger = logger;
-            var opts = options.Value;
+            var opts = options;
 
             _classNames = opts.ClassNames;
             _confidenceThreshold = opts.ConfidenceThreshold;

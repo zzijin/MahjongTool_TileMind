@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using TileMind.Common.Config;
 using TileMind.Common.Models;
 
@@ -24,10 +23,10 @@ public class GameStateTracker
 
     public event Action<MahjongAction>? OnActionDetected;
 
-    public GameStateTracker(IOptionsSnapshot<GameStateTrackerOptions> options, ILogger<GameStateTracker> logger)
+    public GameStateTracker(GameStateTrackerOptions options, ILogger<GameStateTracker> logger)
     {
         _logger = logger;
-        _options = options.Value;
+        _options = options;
 
         foreach (SeatPosition seat in Enum.GetValues<SeatPosition>())
         {

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using TileMind.Common.Config;
 using TileMind.Common.Models;
 
@@ -12,9 +11,9 @@ public class FrameAnalyzerService
 {
     private readonly HandMeldSeparator _separator;
 
-    public FrameAnalyzerService(IOptionsSnapshot<GameStateTrackerOptions> options)
+    public FrameAnalyzerService(GameStateTrackerOptions options)
     {
-        _separator = new HandMeldSeparator(options.Value);
+        _separator = new HandMeldSeparator(options);
     }
 
     /// <summary>

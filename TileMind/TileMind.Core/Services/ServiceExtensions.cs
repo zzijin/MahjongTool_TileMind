@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using TileMind.Common.Config;
@@ -19,21 +19,27 @@ namespace TileMind.Core.Services
             {
                 var config = new ConfigurationBuilder()
                     .SetBasePath(Directory.GetCurrentDirectory())
-                    //.AddJsonFile("appsettings.json")
-                    // 视觉配置文件，当配置发生变化时自动重新加载配置
                     .AddJsonFile(YoloOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .AddJsonFile(FrameFusionOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(GameStateTrackerOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(PipelineOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(OverlayOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .Build();
 
-                services.AddOptions();
                 services.AddSingleton<IConfiguration>(config);
-                services.AddSingleton(new PipelineOptions());
-                services.AddSingleton(new OverlayOptions());
-                services.Configure<YoloOptions>(config.GetSection(YoloOptions.SectionName));
-                services.Configure<FrameFusionOptions>(config.GetSection(FrameFusionOptions.SectionName));
-                services.Configure<GameStateTrackerOptions>(config.GetSection(GameStateTrackerOptions.SectionName));
 
-                // ScreenCaptureOptions 含 OpenCvSharp.Point[]，MS Config 无法绑定，改用 System.Text.Json 直接加载
+                // 所有配置统一用 System.Text.Json 加载为 Singleton
+                services.AddSingleton(SettingConfigExtensions.Load<YoloOptions>(
+                    YoloOptions.SettingFilePath) ?? new YoloOptions());
+                services.AddSingleton(SettingConfigExtensions.Load<FrameFusionOptions>(
+                    FrameFusionOptions.SettingFilePath) ?? new FrameFusionOptions());
+                services.AddSingleton(SettingConfigExtensions.Load<GameStateTrackerOptions>(
+                    GameStateTrackerOptions.SettingFilePath) ?? new GameStateTrackerOptions());
+                services.AddSingleton(SettingConfigExtensions.Load<PipelineOptions>(
+                    PipelineOptions.SettingFilePath) ?? new PipelineOptions());
+                services.AddSingleton(SettingConfigExtensions.Load<OverlayOptions>(
+                    OverlayOptions.SettingFilePath) ?? new OverlayOptions());
+
                 var screenOpts = SettingConfigExtensions.Load<ScreenCaptureOptions>(
                     ScreenCaptureOptions.SettingFilePath) ?? new ScreenCaptureOptions();
                 screenOpts.ComputeDerivedAreas();

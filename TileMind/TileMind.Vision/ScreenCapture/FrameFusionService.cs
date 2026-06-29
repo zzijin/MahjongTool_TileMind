@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using OpenCvSharp;
 using TileMind.Common.Config;
 using TileMind.Common.Models;
@@ -34,13 +33,13 @@ namespace TileMind.Vision.ScreenCapture
 
         public FrameFusionService(
             YoloDetectorPoolService detectorPool,
-            IScreenCaptureService captureService, IOptionsSnapshot<FrameFusionOptions> options, ILogger<FrameFusionService> logger)
+            IScreenCaptureService captureService, FrameFusionOptions options, ILogger<FrameFusionService> logger)
         {
             _detectorPool = detectorPool;
             _captureService = captureService;
             _logger = logger;
 
-            var opts = options.Value;
+            var opts = options;
             _enableFusion = opts.EnableFusion;
             _fusionFrameCount = _enableFusion ? opts.MaxFusionFrameCount : 1;
             _movementThreshold = opts.MovementThreshold;
