@@ -1,0 +1,2 @@
+CreateDirect3D11DeviceFromDXGIDevice
+IGraphicsCaptureItemInterop
