@@ -1,6 +1,6 @@
 # Mahjong Tool — 日麻 AI 辅助工具集
 
-基于 .NET 10 + ONNX Runtime 的实时日麻对局分析项目，覆盖 **模型训练 → 数据标注 → 屏幕识别 → 对局状态追踪 → AI 决策** 完整链路。
+基于 .NET 10 + ONNX Runtime 的实时日麻对局分析项目，覆盖 **模型训练 → 数据标注 → 屏幕捕获 → YOLO推理 → 多帧融合 → 区域路由 → 静态分析 → 牌型分析 → 状态追踪 → AI决策** 完整链路。
 
 ## 项目结构
 
@@ -10,13 +10,13 @@ mahjong_tool/
 │   ├── TileMind.Common/     #   共享模型、配置、工具类
 │   ├── TileMind.Algorithm/  #   RiichiSharp 适配层（牌型分析）
 │   ├── TileMind.Core/       #   DI 注册、静态分析、对局状态追踪、动作分类
-│   ├── TileMind.Vision/     #   DXGI 屏幕捕获、YOLOv8 ONNX 推理、多帧融合、显示器枚举
+│   ├── TileMind.Vision/     #   DXGI 屏幕捕获、YOLO ONNX 推理、多帧融合、显示器枚举
 │   ├── TileMind.AI/         #   AI 决策（占位）
 │   ├── TileMind.UI/         #   WPF 桌面应用、透明叠加层、区域标定工具、设置页面
 │   ├── TileMind.Console/    #   控制台测试入口
 │   └── Dependency/          #   原生依赖（cuDNN 等）
 │
-├── train.py                 # YOLOv8 模型训练脚本
+├── train.py                 # YOLO 模型训练脚本
 ├── export_csharp.py         # 导出 ONNX 模型供 TileMind 推理
 ├── export_label.py          # 标注数据导出/转换
 ├── testenv.py               # 训练环境验证
@@ -26,7 +26,7 @@ mahjong_tool/
 ├── mahjong_env/             # [本地] Python venv 训练环境
 ├── X-AnyLabeling/           # [本地] 标注工具（基于 X-AnyLabeling）
 ├── runs/                    # [本地] YOLO 训练运行日志
-└── *.pt                     # [本地] YOLOv8 模型权重 (n/s/m)
+└── *.pt                     # [本地] YOLO 模型权重 (n/s/m)
 ```
 
 ## TileMind 主程序
@@ -34,7 +34,7 @@ mahjong_tool/
 详见 **[TileMind/README.md](./TileMind/README.md)**，完整文档包含：
 
 - **架构概览** — 7 个项目分层设计（Common → Vision / Core / AI / Algorithm → UI）
-- **核心流程** — 屏幕捕获 → YOLOv8 推理 → 多帧融合 → 区域路由 → 静态分析 → 牌型分析 → [可选] 状态追踪 → 叠加层显示
+- **核心流程** — 模型训练 → 数据标注 → 屏幕捕获 → YOLO推理 → 多帧融合 → 区域路由 → 静态分析 → 牌型分析 → [可选] 状态追踪 → [可选] AI决策 → 叠加层显示
 - **静态分析** — 手牌/副露分离、副露类型判定、暗杠推断、宝牌映射、立直检测
 - **牌型分析** — 基于 [RiichiSharp](https://github.com/zzijin/RiichiSharp)：向听数、听牌判定、打牌推荐、胡牌得点、牌剩余统计
 - **显示器管理** — SharpDX 枚举所有适配器/输出，支持截取屏与覆盖屏分离配置、跨屏坐标映射

@@ -1,6 +1,6 @@
 # TileMind — 日麻 AI 辅助工具
 
-基于 .NET 10 + ONNX Runtime 的实时日麻对局分析工具，支持屏幕捕获、YOLOv8 牌识别、牌型分析与 WPF 叠加层显示。
+基于 .NET 10 + ONNX Runtime 的实时日麻对局分析工具，支持屏幕捕获、YOLO 牌识别、牌型分析与 WPF 叠加层显示。
 
 ## 架构概览
 
@@ -14,7 +14,7 @@
 ├──────────────┬──────────────┬──────────────┬─────────────┤
 │ TileMind.AI  │ TileMind.Vision │ TileMind.Common │ TileMind.Algorithm │
 │  AI 决策     │ DXGI 捕获       │ 共享模型、配置   │ RiichiSharp 适配层 │
-│  (占位)      │ YOLOv8 推理    │ 工具类、扩展方法  │ 向听/听牌/得点计算  │
+│  (占位)      │ YOLO 推理    │ 工具类、扩展方法  │ 向听/听牌/得点计算  │
 │              │ 多帧融合        │ 显示器枚举        │                    │
 │              │ 显示器枚举      │                  │                    │
 └──────────────┴──────────────┴──────────────┴─────────────┘
@@ -27,7 +27,7 @@
 | **TileMind.Common** | 共享数据模型（`TileType`, `DetectionResult`, `GameState`, `TileAnalysisResult`, `MonitorInfo` 等）、配置选项、几何工具（`GeometryHelper`）、游戏窗口定位（`WindowFinderHelper`） |
 | **TileMind.Algorithm** | **RiichiSharp 适配层** — 牌型映射（`TileTypeMapper`）、手牌格式转换（`HandStringBuilder`）、牌型分析服务（向听数、听牌判定、打牌推荐、胡牌得点、牌剩余统计） |
 | **TileMind.Core** | 依赖注入胶水层、**静态分析**（手牌/副露分离、副露类型判定、暗杠推断、宝牌映射、立直检测）、**牌型分析**（调用 RiichiSharp）、**对局状态追踪**（可选：跨帧 IoU 匹配、动作分类） |
-| **TileMind.Vision** | DXGI 桌面复制 API 屏幕捕获、YOLOv8 ONNX 推理（GPU CUDA / CPU 回退）、多帧融合（加权投票 + 场景变化检测）、显示器枚举服务（`MonitorEnumerator` / `MonitorService`） |
+| **TileMind.Vision** | DXGI 桌面复制 API 屏幕捕获、YOLO ONNX 推理（GPU CUDA / CPU 回退）、多帧融合（加权投票 + 场景变化检测）、显示器枚举服务（`MonitorEnumerator` / `MonitorService`） |
 | **TileMind.AI** | AI 决策模块占位 |
 | **TileMind.UI** | WPF-UI 桌面应用、透明 Overlay 叠加层（识别框/区域标记/耗时统计/牌型分析/剩余牌，支持跨屏坐标映射）、屏幕区域标定工具（`ScreenSplitterWindow`）、导航/设置页面 |
 | **TileMind.Console** | 控制台测试入口 |
@@ -36,7 +36,7 @@
 
 ```
 屏幕捕获 (DXGI, OutputIndex 指定显示器)
-    → YOLOv8 推理 (ONNX Runtime, GPU)
+    → YOLO 推理 (ONNX Runtime, GPU)
     → 多帧融合 (加权投票, 场景变化检测)
     → 区域路由 (按 ScreenCaptureOptions 派生区域分发至各玩家/区域)
     → 静态分析 (FrameAnalyzerService: 手牌/副露分离, 副露类型, 宝牌, 立直)
@@ -93,7 +93,7 @@ dotnet run --project TileMind.Console   # 控制台测试
 ## 项目依赖
 
 - **OpenCvSharp4** — 图像处理
-- **Microsoft.ML.OnnxRuntime** — YOLOv8 推理
+- **Microsoft.ML.OnnxRuntime** — YOLO 推理
 - **SharpDX** — 高性能屏幕捕获 + 显示器枚举
 - **WPF-UI** — Fluent Design 桌面界面
 - **CommunityToolkit.Mvvm** — MVVM 工具包
@@ -113,7 +113,7 @@ TileMind/
 ├── TileMind.Core/          # 核心层
 │   └── Services/           #   DI 注册 / FrameAnalyzerService / GameStateTracker / ActionClassifier
 ├── TileMind.Vision/        # 视觉层
-│   ├── Detection/          #   YOLOv8 检测器 / 对象池
+│   ├── Detection/          #   YOLO 检测器 / 对象池
 │   └── ScreenCapture/      #   DXGI 捕获 / 帧融合 / 显示器枚举
 ├── TileMind.AI/            # AI 决策 (占位)
 ├── TileMind.UI/            # WPF 桌面应用
@@ -129,7 +129,7 @@ TileMind/
 ## 当前状态
 
 - **覆盖层绘制**：✅ 识别框、区域标记、耗时统计、牌型分析、牌剩余、跨屏坐标映射、鼠标穿透、高 DPI 支持
-- **屏幕捕获**：✅ DXGI 桌面复制、YOLOv8 GPU 推理（CUDA）、多帧融合
+- **屏幕捕获**：✅ DXGI 桌面复制、YOLO GPU 推理（CUDA）、多帧融合
 - **静态分析**：✅ 手牌/副露分离、副露类型判定、暗杠推断、宝牌映射、立直检测
 - **牌型分析**：✅ 已集成 RiichiSharp（向听数、听牌判定、打牌推荐、胡牌得点、牌剩余统计）
 - **状态追踪**：🔧 架构就绪（基线建立、帧间 IoU 匹配、动作分类），实际对局精度待调优
