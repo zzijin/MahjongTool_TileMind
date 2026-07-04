@@ -66,6 +66,7 @@ public partial class SettingsViewModel : ViewModel
         {
             Overlay.Save();
             Pipeline.Save();
+            ScreenCapture.Save();
             Yolo.Save();
             Fusion.Save();
             Tracker.Save();

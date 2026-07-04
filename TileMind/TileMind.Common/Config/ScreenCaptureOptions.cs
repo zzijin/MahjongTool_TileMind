@@ -14,14 +14,13 @@ namespace TileMind.Common.Config
         //DXGI 适配器索引，通常0表示主显卡
         public int AdapterIndex { get; set; } = 0;
 
-        //DXGI 显示器索引，通常0表示主显示器
+        //DXGI 输出索引（0-based），与 AdapterIndex 组合唯一标识一个显示器
         public int OutputIndex { get; set; } = 0;
 
         //目标游戏进程名（不含 .exe），用于 WGC 按窗口捕获
         public string? GameProcessName { get; set; } = @"Jantama_MahjongSoul";
 
         // ──────── 区域比值（0~1，相对游戏窗口或屏幕，真相源） ────────
-        // 默认值来自 4K(3840×2160) 典型雀魂布局换算
 
         /// <summary>宝牌指示区比值坐标</summary>
         public PointF[] DoraIndicatorRatio { get; set; } = new PointF[4]

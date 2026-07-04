@@ -29,6 +29,10 @@ namespace TileMind.Core.Services
 
                 services.AddSingleton<IConfiguration>(config);
 
+                // 启动时预枚举一次显示器（OutputIndex 统一为 DisplayNumber）
+                // MonitorService 注册在 AddBaseServices 中，此处先触发静态缓存
+                var monitors = MonitorEnumerator.EnumerateAllStatic();
+
                 // 所有配置统一用 System.Text.Json 加载为 Singleton
                 services.AddSingleton(SettingConfigExtensions.Load<YoloOptions>(
                     YoloOptions.SettingFilePath) ?? new YoloOptions());
@@ -44,13 +48,18 @@ namespace TileMind.Core.Services
                 var screenOpts = SettingConfigExtensions.Load<ScreenCaptureOptions>(
                     ScreenCaptureOptions.SettingFilePath) ?? new ScreenCaptureOptions();
 
-                // 先尝试用游戏窗口客户区解析，失败则用全屏 Fallback
+                // 先尝试用游戏窗口客户区解析，失败则用显示器边界（OutputIndex = DisplayNumber）
                 var clientRect = WindowFinderHelper.FindClientRect(screenOpts.GameProcessName ?? "");
                 RectangleF refRect;
                 if (clientRect.HasValue)
+                {
                     refRect = clientRect.Value;
+                }
                 else
-                    refRect = WindowFinderHelper.GetMonitorBounds(screenOpts.OutputIndex);
+                {
+                    var captureMonitor = monitors.FindByOutputIndex(screenOpts.OutputIndex);
+                    refRect = captureMonitor?.Bounds ?? new RectangleF();
+                }
 
                 screenOpts.ResolveAbsoluteCoordsFromRatios(refRect);
                 services.AddSingleton(screenOpts);
@@ -60,6 +69,9 @@ namespace TileMind.Core.Services
             {
                 //注册公共服务
                 services.AddLogging(builder => builder.AddTileMindLogging());
+
+                //注册显示器服务
+                services.AddSingleton<MonitorService>();
 
                 //注册视觉服务
                 services.AddScoped<YoloDetectorPoolService>();

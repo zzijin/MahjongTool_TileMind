@@ -7,6 +7,7 @@ using System;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using TileMind.Common.Config;
+using TileMind.Common.Models;
 using Device = SharpDX.Direct3D11.Device;
 using MapFlags = SharpDX.Direct3D11.MapFlags;
 using Resource = SharpDX.DXGI.Resource;
@@ -32,12 +33,12 @@ namespace TileMind.Vision.ScreenCapture
 
         // 捕获参数
         ScreenCaptureOptions captureOptions;
-        private readonly int _adapterIndex;
-        private readonly int _outputIndex;
+        private readonly MonitorService _monitorService;
 
-        public DxgiScreenCaptureService(ScreenCaptureOptions options, ILogger<DxgiScreenCaptureService> logger)
+        public DxgiScreenCaptureService(ScreenCaptureOptions options, MonitorService monitorService, ILogger<DxgiScreenCaptureService> logger)
         {
             captureOptions = options;
+            _monitorService = monitorService;
             _logger = logger;
             InitializeDxgi();
         }
@@ -46,18 +47,22 @@ namespace TileMind.Vision.ScreenCapture
         {
             try
             {
+                // 按 DisplayNumber 查找目标显示器 → 获取正确的 Adapter/Output 索引
+                var targetMonitor = _monitorService.FindByOutput(captureOptions.AdapterIndex, captureOptions.OutputIndex);
+                int adapterIdx = targetMonitor?.AdapterIndex ?? captureOptions.AdapterIndex;
+                int outputIdx = targetMonitor?.OutputIndex ?? 0;
+
                 // 创建 DXGI 工厂
                 _factory = new Factory1();
 
                 int adapterCount = _factory.GetAdapterCount();
-                // 获取指定的显卡适配器 (通常是独立显卡)
-                if (captureOptions.AdapterIndex >= 0 && captureOptions.AdapterIndex < adapterCount)
+                // 获取指定的显卡适配器
+                if (adapterIdx >= 0 && adapterIdx < adapterCount)
                 {
-                    _adapter = _factory.GetAdapter1(captureOptions.AdapterIndex);
+                    _adapter = _factory.GetAdapter1(adapterIdx);
                 }
                 else
                 {
-                    // 处理索引越界，例如回退到默认适配器 0
                     _adapter = _factory.GetAdapter1(0);
                 }
 
@@ -66,14 +71,12 @@ namespace TileMind.Vision.ScreenCapture
 
                 // 获取显示器输出
                 int outputCount = _adapter.GetOutputCount();
-                if (captureOptions.OutputIndex >= 0 && captureOptions.OutputIndex < outputCount)
+                if (outputIdx >= 0 && outputIdx < outputCount)
                 {
-                    _output = _adapter.GetOutput(captureOptions.OutputIndex);
+                    _output = _adapter.GetOutput(outputIdx);
                 }
                 else
                 {
-                    // 处理没有显示器或索引越界的情况
-                    // 可回退到第一个输出，或抛出友好提示
                     if (outputCount > 0)
                         _output = _adapter.GetOutput(0);
                     else

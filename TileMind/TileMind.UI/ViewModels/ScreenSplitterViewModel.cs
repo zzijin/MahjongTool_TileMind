@@ -3,7 +3,9 @@ using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using TileMind.Common.Config;
 using TileMind.Common.Helpers;
+using TileMind.Common.Models;
 using TileMind.UI.Views;
+using TileMind.Vision.ScreenCapture;
 using PointF = System.Drawing.PointF;
 using RectangleF = System.Drawing.RectangleF;
 
@@ -12,16 +14,24 @@ namespace TileMind.UI.ViewModels;
 public partial class ScreenSplitterViewModel : ViewModel
 {
     private readonly ScreenCaptureOptions _options;
+    private readonly MonitorService _monitorService;
     private readonly ILogger<ScreenSplitterViewModel> _logger;
     private ScreenSplitterOverlayControl? _control;
 
-    public ScreenSplitterViewModel(ScreenCaptureOptions options, ILogger<ScreenSplitterViewModel> logger)
+    public ScreenSplitterViewModel(ScreenCaptureOptions options, MonitorService monitorService, ILogger<ScreenSplitterViewModel> logger)
     {
         _options = options;
+        _monitorService = monitorService;
         _logger = logger;
     }
 
     public void SetControl(ScreenSplitterOverlayControl control) => _control = control;
+
+    /// <summary>获取标定窗口应显示在的显示器信息。</summary>
+    public MonitorInfo? GetTargetMonitor()
+    {
+        return _monitorService.FindByOutputIndex(_options.OutputIndex);
+    }
 
     public void LoadConfig()
     {
@@ -98,15 +108,20 @@ public partial class ScreenSplitterViewModel : ViewModel
 
     // ─────────────── 辅助 ───────────────
 
-    /// <summary>获取参照矩形：优先游戏窗口客户区，否则全屏 Fallback。</summary>
+    /// <summary>获取参照矩形：优先游戏窗口客户区，否则 Fallback 到显示器边界。</summary>
     private RectangleF GetReferenceRect()
     {
         var clientRect = WindowFinderHelper.FindClientRect(_options.GameProcessName ?? "");
         if (clientRect.HasValue)
             return clientRect.Value;
 
-        _logger.LogDebug("未找到游戏窗口({Process})，使用全屏 Fallback。", _options.GameProcessName);
-        return WindowFinderHelper.GetMonitorBounds(_options.OutputIndex);
+        var monitor = _monitorService.FindByOutputIndex(_options.OutputIndex);
+        if (monitor != null)
+            return monitor.Bounds;
+
+        _logger.LogDebug("未找到游戏窗口({Process})和显示器 #{Index}，使用空矩形。",
+            _options.GameProcessName, _options.OutputIndex);
+        return new RectangleF();
     }
 
     /// <summary>从当前绝对坐标反算 Ratio 并写入 _options。</summary>

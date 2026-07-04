@@ -15,6 +15,7 @@
 
     <Page.Resources>
         <converters:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
+        <converters:AlignmentToIntConverter x:Key="AlignmentToIntConverter" />
     </Page.Resources>
 
     <Grid>
@@ -42,6 +43,8 @@
                 <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="覆盖层显示" />
                 <TextBlock Margin="0,6,0,0" Text="控制叠加层上各功能的显隐" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <StackPanel Margin="0,6,0,0">
+                    <TextBlock Margin="0,4,0,0" Text="覆盖层显示器编号" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding ViewModel.Overlay.OutputIndex}" Margin="0,2,0,4" />
                     <CheckBox Content="识别框显示" IsChecked="{Binding ViewModel.Overlay.ShowDetectionBoxes}" />
                     <CheckBox Content="识别区域显示" IsChecked="{Binding ViewModel.Overlay.ShowScreenRegions}" />
                     <CheckBox Content="耗时统计显示" IsChecked="{Binding ViewModel.Overlay.ShowTimingStats}" />
@@ -51,9 +54,102 @@
                     <CheckBox Content="AI决策显示（未实现）" IsEnabled="False" IsChecked="{Binding ViewModel.Overlay.ShowAIDecision}" />
                 </StackPanel>
 
+                <!-- 覆盖层显示位置（屏幕比值坐标，0~1） -->
+                <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="覆盖层显示位置" />
+                <TextBlock Margin="0,6,0,0" Text="各覆盖层文本项的位置（0~1 比值，相对整个屏幕）和对齐方式" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+
+                <!-- 耗时统计 -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="耗时统计" FontWeight="SemiBold" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.TimingStatsDisplay.X}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.TimingStatsDisplay.Y}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="对齐:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.TimingStatsDisplay.Alignment, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="左" />
+                            <ComboBoxItem Content="中" />
+                            <ComboBoxItem Content="右" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 牌堆剩余牌 -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="牌堆剩余牌" FontWeight="SemiBold" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.RemainingTilesDisplay.X}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.RemainingTilesDisplay.Y}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="对齐:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.RemainingTilesDisplay.Alignment, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="左" />
+                            <ComboBoxItem Content="中" />
+                            <ComboBoxItem Content="右" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 牌型分析 -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="牌型分析" FontWeight="SemiBold" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.WinningAnalysisDisplay.X}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.WinningAnalysisDisplay.Y}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="对齐:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.WinningAnalysisDisplay.Alignment, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="左" />
+                            <ComboBoxItem Content="中" />
+                            <ComboBoxItem Content="右" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- 动作记录 -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="动作记录（未实现）" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.ActionLogDisplay.X}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.ActionLogDisplay.Y}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="对齐:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.ActionLogDisplay.Alignment, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="左" />
+                            <ComboBoxItem Content="中" />
+                            <ComboBoxItem Content="右" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- AI 决策 -->
+                <StackPanel Margin="0,10,0,0">
+                    <TextBlock Text="AI 决策（未实现）" Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontSize="13" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="X:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.AIDecisionDisplay.X}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Width="16" />
+                        <TextBox Text="{Binding ViewModel.Overlay.AIDecisionDisplay.Y}" Width="60" Margin="0,0,8,0" />
+                        <TextBlock Text="对齐:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.AIDecisionDisplay.Alignment, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="左" />
+                            <ComboBoxItem Content="中" />
+                            <ComboBoxItem Content="右" />
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+
                 <!-- 屏幕捕获 -->
                 <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="屏幕捕获" />
                 <StackPanel Margin="0,6,0,0">
+                    <TextBlock Margin="0,4,0,0" Text="截取显示器编号（显示器N的编号）" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding ViewModel.ScreenCapture.OutputIndex}" Margin="0,2,0,4" />
+                    <TextBlock Margin="0,4,0,0" Text="显卡适配器索引" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBox Text="{Binding ViewModel.ScreenCapture.AdapterIndex}" Margin="0,2,0,4" />
                     <TextBlock Margin="0,4,0,0" Text="游戏进程名（不含 .exe）" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding ViewModel.ScreenCapture.GameProcessName}" Margin="0,2,0,4" />
                 </StackPanel>

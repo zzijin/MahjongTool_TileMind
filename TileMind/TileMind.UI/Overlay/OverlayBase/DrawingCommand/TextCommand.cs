@@ -1,23 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 
 namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
 {
+    /// <summary>文本锚点的垂直位置。</summary>
+    public enum VerticalAnchor { Bottom, Top }
 
-    // ---------------------------------------------
-    // TextCommand.cs
     public record class TextCommand : IDrawingCommand
     {
         public string Text { get; set; } = "";
-        public Point Position { get; set; }                // 文本基线起点
+        /// <summary>锚点坐标。Y 的基准由 VerticalAnchor 控制。</summary>
+        public Point Position { get; set; }
         public double FontSize { get; set; } = 12;
         public Brush Foreground { get; set; } = Brushes.White;
         public Brush Background { get; set; } = new SolidColorBrush(Color.FromArgb(200, 40, 40, 40));
         public Typeface Typeface { get; set; } = new Typeface("Consolas");
+        /// <summary>水平对齐。</summary>
         public TextAlignment Alignment { get; set; } = TextAlignment.Left;
+        /// <summary>垂直锚点，Bottom=Y 为底边，Top=Y 为顶边。默认 Bottom 兼容旧行为。</summary>
+        public VerticalAnchor VerticalAnchor { get; set; } = VerticalAnchor.Bottom;
         public bool DrawBackground { get; set; } = true;
 
         private FormattedText CreateFormattedText(double pixelsPerDip)
@@ -31,8 +32,6 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
                 Foreground,
                 pixelsPerDip)
             {
-                // 始终使用 Left，对齐通过手动位移实现。
-                // 在 auto 宽度下 Center/Right 会导致 FormattedText 内部偏移与实际 Width 不一致。
                 TextAlignment = TextAlignment.Left
             };
         }
@@ -49,8 +48,10 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
                 _ => 0
             };
 
-            // Position 为锚点，textOrigin 是文字+背景的左上角
-            Point textOrigin = new Point(Position.X + offsetX, Position.Y - formatted.Height);
+            double y = VerticalAnchor == VerticalAnchor.Top
+                ? Position.Y
+                : Position.Y - formatted.Height;
+            Point textOrigin = new Point(Position.X + offsetX, y);
 
             if (DrawBackground)
             {

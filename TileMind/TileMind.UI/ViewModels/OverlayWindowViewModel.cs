@@ -3,13 +3,17 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Collections.ObjectModel;
+using OpenCvSharp;
 using System.Windows;
 using System.Windows.Media;
+using CvPoint = OpenCvSharp.Point;
+using CvRect = OpenCvSharp.Rect;
 using TileMind.Common.Config;
 using TileMind.Common.Helpers;
 using TileMind.Common.Models;
 using TileMind.Core.Services;
 using TileMind.UI.Overlay;
+using TileMind.Vision.ScreenCapture;
 using TileMind.UI.Overlay.OverlayBase;
 using TileMind.UI.Overlay.OverlayBase.DrawingCommand;
 using RectangleF = System.Drawing.RectangleF;
@@ -21,6 +25,7 @@ public partial class OverlayWindowViewModel : ViewModel
     private readonly IServiceProvider _serviceProvider;
     private readonly ScreenCaptureOptions _screenOpts;
     private readonly OverlayOptions _overlayOpts;
+    private readonly MonitorService _monitorService;
     private readonly MahjongTileCommandGenerator _commandGenerator = new();
     private readonly ILogger<OverlayWindowViewModel> _logger;
 
@@ -42,17 +47,42 @@ public partial class OverlayWindowViewModel : ViewModel
     /// <summary>覆盖层功能开关配置。</summary>
     public OverlayOptions OverlayOptions => _overlayOpts;
 
+    /// <summary>截取显示器的物理像素边界。</summary>
+    private RectangleF _captureBounds;
+
+    /// <summary>覆盖层显示器的物理像素边界。</summary>
+    private RectangleF _overlayPhysicalBounds;
+
+    /// <summary>截取与覆盖不在同一显示器时需要坐标映射。</summary>
+    private bool _needsCoordMapping;
+
     public OverlayWindowViewModel(
         FrameStateHub hub,
         ScreenCaptureOptions screenOpts,
         OverlayOptions overlayOpts,
+        MonitorService monitorService,
         IServiceProvider serviceProvider,
         ILogger<OverlayWindowViewModel> logger)
     {
         _screenOpts = screenOpts;
         _overlayOpts = overlayOpts;
+        _monitorService = monitorService;
         _serviceProvider = serviceProvider;
         _logger = logger;
+
+        // 坐标映射：截取屏 → 覆盖屏
+        var captureMonitor = monitorService.FindByOutputIndex(screenOpts.OutputIndex);
+        var overlayMonitor = monitorService.FindByOutputIndex(overlayOpts.OutputIndex);
+        if (captureMonitor != null)
+            _captureBounds = captureMonitor.Bounds;
+        if (overlayMonitor != null)
+            _overlayPhysicalBounds = overlayMonitor.Bounds;
+
+        _needsCoordMapping = screenOpts.OutputIndex != overlayOpts.OutputIndex
+                             && captureMonitor != null && overlayMonitor != null;
+        if (_needsCoordMapping)
+            _logger.LogInformation("跨屏坐标映射已启用: 截取屏 Out{CaptureOut} → 覆盖屏 Out{OverlayOut}",
+                screenOpts.OutputIndex, overlayOpts.OutputIndex);
 
         // 区域数据是静态的，初始化时绘制
         if (_overlayOpts.ShowScreenRegions)
@@ -125,7 +155,8 @@ public partial class OverlayWindowViewModel : ViewModel
         }
         else
         {
-            refRect = WindowFinderHelper.GetMonitorBounds(_screenOpts.OutputIndex);
+            var monitor = _monitorService.FindByOutputIndex(_screenOpts.OutputIndex);
+            refRect = monitor?.Bounds ?? new RectangleF();
             usingWindow = false;
         }
 
@@ -135,7 +166,24 @@ public partial class OverlayWindowViewModel : ViewModel
         else if (usingWindow)
             _logger.LogWarning("重定位: ResolveAbsoluteCoordsFromRatios 返回 false，窗口={Rect}，保留旧坐标", refRect);
         else
-            _logger.LogWarning("重定位: 未找到游戏窗口({Proc})，使用全屏 Fallback，保留旧坐标", _screenOpts.GameProcessName);
+            _logger.LogWarning("重定位: 未找到游戏窗口({Proc})，使用显示器 #{Idx} Fallback",
+                _screenOpts.GameProcessName, _screenOpts.OutputIndex);
+    }
+
+    /// <summary>将 OverlayTextAlignment 映射为 WPF TextAlignment。</summary>
+    private static System.Windows.TextAlignment ToWpfAlignment(OverlayTextAlignment a) => a switch
+    {
+        OverlayTextAlignment.Left => System.Windows.TextAlignment.Left,
+        OverlayTextAlignment.Center => System.Windows.TextAlignment.Center,
+        OverlayTextAlignment.Right => System.Windows.TextAlignment.Right,
+        _ => System.Windows.TextAlignment.Left,
+    };
+
+    /// <summary>根据显示配置计算屏幕绝对坐标（覆盖屏物理像素 + 屏幕偏移）。</summary>
+    private System.Windows.Point ResolveDisplayPosition(OverlayItemDisplayConfig config)
+    {
+        var (x, y) = config.ResolveToAbsolute(_overlayPhysicalBounds.Width, _overlayPhysicalBounds.Height);
+        return new System.Windows.Point(x + _overlayPhysicalBounds.X, y + _overlayPhysicalBounds.Y);
     }
 
     private void OnFrameAnalyzed(AnalyzedFrame analysis)
@@ -161,8 +209,10 @@ public partial class OverlayWindowViewModel : ViewModel
             var cmd = new TextCommand
             {
                 Text = text,
-                Position = new Point(16, 24),
+                Position = ResolveDisplayPosition(_overlayOpts.TimingStatsDisplay),
                 FontSize = 15,
+                Alignment = ToWpfAlignment(_overlayOpts.TimingStatsDisplay.Alignment),
+                VerticalAnchor = VerticalAnchor.Top,
                 Foreground = new SolidColorBrush(Color.FromArgb(230, 180, 255, 180)),
                 Background = new SolidColorBrush(Color.FromArgb(180, 20, 20, 20))
             };
@@ -189,10 +239,9 @@ public partial class OverlayWindowViewModel : ViewModel
                 var cmd = new TextCommand
                 {
                     Text = text,
-                    Position = new Point(SystemParameters.WorkArea.Right - 16,
-                        SystemParameters.WorkArea.Bottom - 24),
+                    Position = ResolveDisplayPosition(_overlayOpts.RemainingTilesDisplay),
                     FontSize = 12,
-                    Alignment = TextAlignment.Right,
+                    Alignment = ToWpfAlignment(_overlayOpts.RemainingTilesDisplay.Alignment),
                     Foreground = new SolidColorBrush(Color.FromArgb(200, 180, 220, 255)),
                     Background = new SolidColorBrush(Color.FromArgb(160, 20, 20, 20))
                 };
@@ -247,9 +296,10 @@ public partial class OverlayWindowViewModel : ViewModel
             var cmd = new TextCommand
             {
                 Text = sb.ToString().TrimEnd(),
-                Position = new Point(SystemParameters.WorkArea.Right - 16, 48),
+                Position = ResolveDisplayPosition(_overlayOpts.WinningAnalysisDisplay),
                 FontSize = 13,
-                Alignment = TextAlignment.Right,
+                Alignment = ToWpfAlignment(_overlayOpts.WinningAnalysisDisplay.Alignment),
+                VerticalAnchor = VerticalAnchor.Top,
                 Foreground = new SolidColorBrush(Color.FromArgb(230, 255, 220, 140)),
                 Background = new SolidColorBrush(Color.FromArgb(180, 20, 20, 20))
             };
@@ -268,10 +318,11 @@ public partial class OverlayWindowViewModel : ViewModel
         {
             if (analysis.Players.TryGetValue(seat, out var player) && player.HandTiles.Count > 0)
             {
-                var commands = player.HandTiles
-                    .SelectMany(d => _commandGenerator.GenerateCommands(d))
-                    .ToList();
-                OverlayItems.Add(new PlayerTileDrawingInfo(seat, player.HandTiles, commands));
+                var dets = _needsCoordMapping
+                    ? player.HandTiles.Select(MapDetection).ToList()
+                    : player.HandTiles;
+                var commands = dets.SelectMany(d => _commandGenerator.GenerateCommands(d)).ToList();
+                OverlayItems.Add(new PlayerTileDrawingInfo(seat, dets, commands));
             }
         }
 
@@ -282,10 +333,11 @@ public partial class OverlayWindowViewModel : ViewModel
             {
                 foreach (var meld in player.Melds)
                 {
-                    var commands = meld.Tiles
-                        .SelectMany(d => _commandGenerator.GenerateCommands(d, meldType: meld.MeldType))
-                        .ToList();
-                    OverlayItems.Add(new PlayerTileDrawingInfo(seat, meld.Tiles, commands));
+                    var dets = _needsCoordMapping
+                        ? meld.Tiles.Select(MapDetection).ToList()
+                        : meld.Tiles;
+                    var commands = dets.SelectMany(d => _commandGenerator.GenerateCommands(d, meldType: meld.MeldType)).ToList();
+                    OverlayItems.Add(new PlayerTileDrawingInfo(seat, dets, commands));
                 }
             }
         }
@@ -295,20 +347,22 @@ public partial class OverlayWindowViewModel : ViewModel
         {
             if (analysis.DiscardPondDetections.TryGetValue(seat, out var pondDets) && pondDets.Count > 0)
             {
-                var commands = pondDets
-                    .SelectMany(d => _commandGenerator.GenerateCommands(d))
-                    .ToList();
-                OverlayItems.Add(new PlayerTileDrawingInfo(seat, pondDets, commands));
+                var dets = _needsCoordMapping
+                    ? pondDets.Select(MapDetection).ToList()
+                    : pondDets;
+                var commands = dets.SelectMany(d => _commandGenerator.GenerateCommands(d)).ToList();
+                OverlayItems.Add(new PlayerTileDrawingInfo(seat, dets, commands));
             }
         }
 
         // 宝牌指示牌
         if (analysis.DoraIndicatorDetections.Count > 0)
         {
-            var commands = analysis.DoraIndicatorDetections
-                .SelectMany(d => _commandGenerator.GenerateCommands(d))
-                .ToList();
-            OverlayItems.Add(new MahjongTileDrawingInfo(analysis.DoraIndicatorDetections, commands));
+            var dets = _needsCoordMapping
+                ? analysis.DoraIndicatorDetections.Select(MapDetection).ToList()
+                : analysis.DoraIndicatorDetections;
+            var commands = dets.SelectMany(d => _commandGenerator.GenerateCommands(d)).ToList();
+            OverlayItems.Add(new MahjongTileDrawingInfo(dets, commands));
         }
 
     }
@@ -343,14 +397,18 @@ public partial class OverlayWindowViewModel : ViewModel
         AddRegionQuad("Info", _screenOpts.InfoArea, Colors.Cyan);
     }
 
-    private void AddRegionQuad(string name, OpenCvSharp.Point[] quad, Color color)
+    private void AddRegionQuad(string name, CvPoint[] quad, Color color)
     {
         if (quad.Length != 4) return;
         if (quad.All(p => p.X == 0 && p.Y == 0)) return;
 
+        // 跨屏映射
+        if (_needsCoordMapping)
+            quad = MapPoints(quad);
+
         var points = new PointCollection();
         for (int i = 0; i < 4; i++)
-            points.Add(new Point(quad[i].X, quad[i].Y));
+            points.Add(new System.Windows.Point(quad[i].X, quad[i].Y));
 
         var commands = new List<IDrawingCommand>
         {
@@ -363,7 +421,7 @@ public partial class OverlayWindowViewModel : ViewModel
             new TextCommand
             {
                 Text = name,
-                Position = new Point(
+                Position = new System.Windows.Point(
                     (points[0].X + points[1].X + points[2].X + points[3].X) / 4,
                     (points[0].Y + points[1].Y + points[2].Y + points[3].Y) / 4),
                 FontSize = 16,
@@ -383,5 +441,40 @@ public partial class OverlayWindowViewModel : ViewModel
         foreach (var item in _regionItems)
             OverlayItems.Remove(item);
         _regionItems.Clear();
+    }
+
+    // ─────────────── 跨屏坐标映射 ───────────────
+
+    /// <summary>将截取屏物理像素坐标映射为覆盖屏物理像素坐标。</summary>
+    private CvRect MapRect(CvRect r)
+    {
+        float sx = _captureBounds.Width > 0 ? (r.X - _captureBounds.X) / _captureBounds.Width : 0;
+        float sy = _captureBounds.Height > 0 ? (r.Y - _captureBounds.Y) / _captureBounds.Height : 0;
+        float sw = _captureBounds.Width > 0 ? r.Width / _captureBounds.Width : 0;
+        float sh = _captureBounds.Height > 0 ? r.Height / _captureBounds.Height : 0;
+        return new CvRect(
+            (int)Math.Round(sx * _overlayPhysicalBounds.Width + _overlayPhysicalBounds.X),
+            (int)Math.Round(sy * _overlayPhysicalBounds.Height + _overlayPhysicalBounds.Y),
+            (int)Math.Round(sw * _overlayPhysicalBounds.Width),
+            (int)Math.Round(sh * _overlayPhysicalBounds.Height));
+    }
+
+    private CvPoint[] MapPoints(CvPoint[] pts)
+    {
+        var mapped = new CvPoint[pts.Length];
+        for (int i = 0; i < pts.Length; i++)
+        {
+            float sx = _captureBounds.Width > 0 ? (pts[i].X - _captureBounds.X) / _captureBounds.Width : 0;
+            float sy = _captureBounds.Height > 0 ? (pts[i].Y - _captureBounds.Y) / _captureBounds.Height : 0;
+            mapped[i] = new CvPoint(
+                (int)Math.Round(sx * _overlayPhysicalBounds.Width + _overlayPhysicalBounds.X),
+                (int)Math.Round(sy * _overlayPhysicalBounds.Height + _overlayPhysicalBounds.Y));
+        }
+        return mapped;
+    }
+
+    private DetectionResult MapDetection(DetectionResult d)
+    {
+        return d with { BoundingBox = MapRect(d.BoundingBox) };
     }
 }

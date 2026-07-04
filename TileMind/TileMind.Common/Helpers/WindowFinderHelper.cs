@@ -27,43 +27,6 @@ public static class WindowFinderHelper
     [DllImport("user32.dll")]
     private static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
 
-    // --- EnumDisplayMonitors ---
-
-    [DllImport("user32.dll")]
-    private static extern bool EnumDisplayMonitors(IntPtr hdc, IntPtr lprcClip,
-        MonitorEnumDelegate lpfnEnum, IntPtr dwData);
-
-    private delegate bool MonitorEnumDelegate(IntPtr hMonitor, IntPtr hdc, ref RECT lprcMonitor, IntPtr dwData);
-
-    /// <summary>
-    /// 获取指定索引显示器的边界矩形（相对于虚拟屏幕左上角）。
-    /// 索引无效时回退到 SM_CXSCREEN/SM_CYSCREEN（主显示器）。
-    /// </summary>
-    public static RectangleF GetMonitorBounds(int monitorIndex)
-    {
-        var monitors = new List<RECT>();
-        EnumDisplayMonitors(IntPtr.Zero, IntPtr.Zero,
-            (IntPtr hMonitor, IntPtr hdc, ref RECT lprcMonitor, IntPtr dwData) =>
-            {
-                monitors.Add(lprcMonitor);
-                return true;
-            }, IntPtr.Zero);
-
-        if (monitorIndex >= 0 && monitorIndex < monitors.Count)
-        {
-            var r = monitors[monitorIndex];
-            return new RectangleF(r.left, r.top, r.right - r.left, r.bottom - r.top);
-        }
-
-        // 回退：主显示器尺寸
-        int sw = GetSystemMetrics(0);  // SM_CXSCREEN
-        int sh = GetSystemMetrics(1);  // SM_CYSCREEN
-        return new RectangleF(0, 0, sw, sh);
-    }
-
-    [DllImport("user32.dll")]
-    private static extern int GetSystemMetrics(int nIndex);
-
     /// <summary>
     /// 根据进程名查找主窗口的客户区屏幕矩形。
     /// </summary>

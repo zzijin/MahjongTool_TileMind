@@ -7,11 +7,11 @@
         mc:Ignorable="d"
         Title="TileMind Overlay"
         Background="Transparent"
-        WindowState="Maximized"
         AllowsTransparency="True"
         WindowStyle="None"
         Topmost="True"
-        ShowInTaskbar="False">
+        ShowInTaskbar="False"
+        WindowStartupLocation="Manual">
     <Grid>
         <!-- 识别覆盖层 -->
         <overlay:MahjongOverlayControl x:Name="OverlayControl"

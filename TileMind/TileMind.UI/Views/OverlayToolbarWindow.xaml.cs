@@ -12,12 +12,14 @@ public partial class OverlayToolbarWindow : Window
         DataContext = viewModel;
         InitializeComponent();
 
-        // 定位到左下角
+        // 定位到 Owner 窗口（OverlayWindow）的左下角，自动跟随到正确显示器
         Loaded += (_, _) =>
         {
-            var screen = SystemParameters.WorkArea;
-            Left = 16;
-            Top = screen.Bottom - Height - 16;
+            if (Owner != null)
+            {
+                Left = Owner.Left + 16;
+                Top = Owner.Top + Owner.ActualHeight - Height - 16;
+            }
         };
     }
 
