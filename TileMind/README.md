@@ -136,10 +136,18 @@ TileMind/
 - **显示器管理**：✅ SharpDX 枚举、跨屏坐标映射、覆盖层窗口定位
 - **区域标定**：✅ ScreenSplitter 四边形拖拽工具，Ratio 坐标保存/重定位
 
-![程序运行示例](Docs/Images/程序运行示例图001.png)
+### 示例-第一阶段-基础识别与覆盖层绘制
 
-### 分屏功能
+![程序运行示例](Docs/Images/基础识别与覆盖层绘制.png)
+
+### 示例-第二阶段-完整静态分析功能实现
+
+参照分屏功能-副屏绘制功能
+
+![程序运行示例](Docs/Images/分屏功能-副屏绘制.png)
+
+### 示例-第三阶段-分屏功能
 
 截取屏与覆盖屏可配置为不同显示器，覆盖层自动完成坐标映射，在主屏游戏时副屏同步显示识别结果。
 
-<table><tr><td><img src="Docs/Images/分屏功能展示-主屏游戏.png" alt="主屏游戏"/></td><td><img src="Docs/Images/分屏功能展示-副屏绘制.png" alt="副屏绘制"/></td></tr></table>
+<table><tr><td><img src="Docs/Images/分屏功能-主屏游戏.png" alt="主屏"/></td><td><img src="Docs/Images/分屏功能-副屏绘制.png" alt="副屏"/></td></tr></table>
