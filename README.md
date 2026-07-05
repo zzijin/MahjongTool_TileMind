@@ -1,4 +1,4 @@
-# Mahjong Tool — 日麻 AI 辅助工具集
+# TileMind — 日麻 AI 辅助工具集
 
 基于 .NET 10 + ONNX Runtime 的实时日麻对局分析项目，覆盖 **模型训练 → 数据标注 → 屏幕捕获 → YOLO推理 → 多帧融合 → 区域路由 → 静态分析 → 牌型分析 → 状态追踪 → AI决策** 完整链路。
 
@@ -6,27 +6,37 @@
 
 ```
 mahjong_tool/
-├── TileMind/                # 主程序 (.NET 10, C#)
-│   ├── TileMind.Common/     #   共享模型、配置、工具类
-│   ├── TileMind.Algorithm/  #   RiichiSharp 适配层（牌型分析）
-│   ├── TileMind.Core/       #   DI 注册、静态分析、对局状态追踪、动作分类
-│   ├── TileMind.Vision/     #   DXGI 屏幕捕获、YOLO ONNX 推理、多帧融合、显示器枚举
-│   ├── TileMind.AI/         #   AI 决策（占位）
-│   ├── TileMind.UI/         #   WPF 桌面应用、透明叠加层、区域标定工具、设置页面
-│   ├── TileMind.Console/    #   控制台测试入口
-│   └── Dependency/          #   原生依赖（cuDNN 等）
+├── TileMind/                    # 主程序 (.NET 10, C#)
+│   ├── TileMind.slnx            #   解决方案文件
+│   ├── README.md                #   项目文档（架构、流程、配置）
+│   ├── TileMind.Common/         #   共享模型、配置、工具类
+│   ├── TileMind.Algorithm/      #   RiichiSharp 适配层（牌型分析）
+│   ├── TileMind.Core/           #   DI 注册、静态分析、对局状态追踪、动作分类
+│   ├── TileMind.Vision/         #   DXGI 屏幕捕获、YOLO ONNX 推理、多帧融合、显示器枚举
+│   ├── TileMind.AI/             #   AI 决策（占位）
+│   ├── TileMind.UI/             #   WPF 桌面应用、透明叠加层、区域标定工具、设置页面
+│   ├── TileMind.Console/        #   控制台测试入口
+│   ├── Dependency/              #   原生依赖说明
+│   └── Docs/Images/             #   截图与示意图
 │
-├── train.py                 # YOLO 模型训练脚本
-├── export_csharp.py         # 导出 ONNX 模型供 TileMind 推理
-├── export_label.py          # 标注数据导出/转换
-├── testenv.py               # 训练环境验证
+├── Train/                       # 模型训练（Python, YOLO）
+│   ├── train_yolo26.py          #   YOLO26 训练脚本
+│   ├── train_yolov8.py          #   YOLOv8 训练脚本
+│   ├── export_csharp.py         #   导出 ONNX 模型供 TileMind 推理
+│   ├── export_label.py          #   标注数据导出/转换
+│   ├── split_dataset.py         #   数据集切分
+│   ├── testenv.py               #   训练环境验证
+│   ├── buildenv.txt             #   构建环境配置
+│   └── mahjong_model/           #   训练输出（ONNX 模型）
 │
-├── mahjong_dataset/         # [本地] 训练数据集（图片 + YOLO 标注）
-├── mahjong_model/           # [本地] 训练实验输出与 ONNX 模型
-├── mahjong_env/             # [本地] Python venv 训练环境
-├── X-AnyLabeling/           # [本地] 标注工具（基于 X-AnyLabeling）
-├── runs/                    # [本地] YOLO 训练运行日志
-└── *.pt                     # [本地] YOLO 模型权重 (n/s/m)
+├── X-AnyLabeling/               # 标注工具与质量检查
+│   ├── check_annotations.py     #   标注质量检查
+│   ├── validate_model.py        #   模型验证
+│   └── models/                  #   标注工具模型（ONNX + YAML）
+│
+├── .gitignore
+├── LICENSE
+└── README.md
 ```
 
 ## TileMind 主程序
