@@ -16,7 +16,6 @@ public partial class OverlayWindow : Window
     {
         DataContext = viewModel;
 
-        // 记录目标屏幕坐标（物理像素），由 OnSourceInitialized 实际定位
         var opts = viewModel.OverlayOptions;
         var monitor = monitorService.FindByOutputIndex(opts.OutputIndex);
         if (monitor != null)
@@ -26,7 +25,7 @@ public partial class OverlayWindow : Window
         }
 
         InitializeComponent();
-        OverlayControl.ItemsSource = viewModel.OverlayItems;
+        viewModel.SetOverlayControl(OverlayControl);
     }
 
     protected override void OnSourceInitialized(EventArgs e)
@@ -34,19 +33,13 @@ public partial class OverlayWindow : Window
         base.OnSourceInitialized(e);
         var hwnd = new WindowInteropHelper(this).Handle;
 
-        // 1. 将窗口移动到目标显示器（SetWindowPos 立即生效，WPF 尚未测量时也能工作）
-        SetWindowPos(hwnd, IntPtr.Zero,
-            (int)_targetLeft, (int)_targetTop, 0, 0,
+        SetWindowPos(hwnd, IntPtr.Zero, (int)_targetLeft, (int)_targetTop, 0, 0,
             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-
-        // 2. 此时窗口已在目标显示器上，再最大化即可撑满该屏
         WindowState = WindowState.Maximized;
 
-        // 3. 设置透明 + 鼠标穿透
         var extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
         SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_LAYERED | WS_EX_TRANSPARENT);
 
-        // 4. 将屏幕物理像素坐标映射到 WPF DIP 坐标（支持高 DPI）
         var dpi = VisualTreeHelper.GetDpi(this);
         var origin = PointFromScreen(new Point(0, 0));
         var matrix = new Matrix();
@@ -66,9 +59,7 @@ public partial class OverlayWindow : Window
             _toolbar.Show();
             return;
         }
-
-        if (!_toolbar.IsVisible)
-            _toolbar.Show();
+        if (!_toolbar.IsVisible) _toolbar.Show();
     }
 
     protected override void OnActivated(EventArgs e)
@@ -83,8 +74,6 @@ public partial class OverlayWindow : Window
         base.OnClosed(e);
     }
 
-    // ── Win32 ──
-
     private const int GWL_EXSTYLE = -20;
     private const int WS_EX_LAYERED = 0x80000;
     private const int WS_EX_TRANSPARENT = 0x20;
@@ -92,13 +81,7 @@ public partial class OverlayWindow : Window
     private const uint SWP_NOZORDER = 0x0004;
     private const uint SWP_NOACTIVATE = 0x0010;
 
-    [DllImport("user32.dll")]
-    private static extern int GetWindowLong(IntPtr hwnd, int index);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
-
-    [DllImport("user32.dll")]
-    private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter,
-        int X, int Y, int cx, int cy, uint uFlags);
+    [DllImport("user32.dll")] private static extern int GetWindowLong(IntPtr hwnd, int index);
+    [DllImport("user32.dll")] private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
+    [DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 }

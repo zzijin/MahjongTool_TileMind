@@ -34,7 +34,7 @@ namespace TileMind.Console
 
         private static void YoloDetectorPoolService_Test(ServiceProvider serviceProvider)
         {
-            var imagePath = @".\testdatas\9002.png";
+            var imagePath = @".\testdatas\1001.png";
 
             var yoloDetectorPool = serviceProvider.GetRequiredService<YoloDetectorPoolService>();
             var screenCaptureService = serviceProvider.GetRequiredService<IScreenCaptureService>();
@@ -58,7 +58,7 @@ namespace TileMind.Console
                 //var detections = yoloDetector.Detect(imagePath);
                 //var detections = yoloDetector.Detect(image);
 
-                yoloDetector.DetectAndSave(@".\testdatas\9002.png", $@".\testdatas\9002_output_{i}.png");
+                var detections = yoloDetector.DetectAndSave(@".\testdatas\1001.png", $@".\testdatas\1001_output_{i}.png");
                 //yoloDetector.DetectAndSave(image, $@".\testdatas\capture_output_{i}.png");
                 //var fusionResult = frameFusionService.ProcessFrameFusion();
 
@@ -87,7 +87,7 @@ namespace TileMind.Console
         {
             var classFilePath = @".\models\classes.txt";
             var classNames = File.ReadAllLines(classFilePath);
-            var modelPath = @".\models\yolov8m-fp32.onnx";
+            var modelPath = @".\models\yolo-model.onnx";
 
             var visionConfig = new Dictionary<string, string>()
             {

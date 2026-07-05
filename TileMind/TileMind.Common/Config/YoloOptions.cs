@@ -11,7 +11,7 @@ namespace TileMind.Common.Config
         public const string SectionName = "Yolo";
 
         //模型地址
-        public string ModelPath { get; set; } = @".\models\yolov8m-fp32.onnx";
+        public string ModelPath { get; set; } = @".\models\yolo-model.onnx";
 
         //模型支持的类别名称
         public string[] ClassNames { get; set; } = [];

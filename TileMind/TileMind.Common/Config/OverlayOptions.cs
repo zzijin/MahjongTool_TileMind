@@ -29,6 +29,9 @@ public class OverlayOptions
     /// <summary>本家胡牌组合/张数/点数显示。</summary>
     public bool ShowWinningAnalysis { get; set; }
 
+    /// <summary>牌型分析显示模式。FullText=右上角文本面板，OnTile=手牌上方标注。</summary>
+    public WinningAnalysisMode WinningAnalysisMode { get; set; } = WinningAnalysisMode.FullText;
+
     /// <summary>玩家动作记录显示。</summary>
     public bool ShowActionLog { get; set; }
 

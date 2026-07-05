@@ -9,8 +9,8 @@ namespace TileMind.Common.Config
         public const string SettingFilePath = @".\settings\framefusionsettings.json";
         public const string SectionName = "FrameFusion";
 
-        //是否启用帧融合功能，启用后识别准确率可能提升，但会增加处理延迟，建议在性能允许的情况下启用
-        public bool EnableFusion { get; set; } = true;
+        //是否启用帧融合功能，启用后识别准确率可能提升，但会增加处理延迟，建议在性能允许的情况下启用（实验性）
+        public bool EnableFusion { get; set; } = false;
 
         //最大融合帧数,单次采集这么多帧数后才开始融合,过多可能增加延迟
         public int MaxFusionFrameCount { get; set; } = 3;

@@ -10,7 +10,7 @@ using TileMind.Vision.ScreenCapture;
 namespace TileMind.Vision.Detection
 {
     /// <summary>
-    /// 基于对象池的 YOLOv8 检测器管理器，用于高性能多线程推理。
+    /// 基于对象池的 YOLO 检测器管理器，用于高性能多线程推理。
     /// </summary>
     public class YoloDetectorPoolService : IDisposable
     {
@@ -54,7 +54,7 @@ namespace TileMind.Vision.Detection
         }
 
         /// <summary>
-        /// 从池中获取一个 Yolov8Detector 实例。如果池为空，则创建一个新实例。
+        /// 从池中获取一个 YoloDetector 实例。如果池为空，则创建一个新实例。
         /// </summary>
         public YoloDetector? Rent()
         {
@@ -117,7 +117,7 @@ namespace TileMind.Vision.Detection
         }
 
         /// <summary>
-        /// 将 Yolov8Detector 实例归还到池中。
+        /// 将 YoloDetector 实例归还到池中。
         /// </summary>
         public void Return(YoloDetector detector)
         {

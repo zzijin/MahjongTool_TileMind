@@ -14,13 +14,17 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
     {
         public Rect Rect { get; set; } = Rect.Empty;
         public double CornerRadius { get; set; } = 0;
+        public Brush? FillBrush { get; set; }
+        public Pen? StrokePen { get; set; }
 
         public void Draw(DrawingContext dc, Brush fillBrush, Pen strokePen)
         {
+            var fill = FillBrush ?? fillBrush;
+            var pen = StrokePen ?? strokePen;
             if (CornerRadius > 0)
-                dc.DrawRoundedRectangle(fillBrush, strokePen, Rect, CornerRadius, CornerRadius);
+                dc.DrawRoundedRectangle(fill, pen, Rect, CornerRadius, CornerRadius);
             else
-                dc.DrawRectangle(fillBrush, strokePen, Rect);
+                dc.DrawRectangle(fill, pen, Rect);
         }
 
         public Rect GetBounds() => Rect;

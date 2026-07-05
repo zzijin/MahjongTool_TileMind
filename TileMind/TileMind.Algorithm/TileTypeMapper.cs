@@ -50,4 +50,8 @@ public static class TileTypeMapper
     /// <summary>获取 Tile Id，背牌返回 -1（跳过）。</summary>
     public static int GetTileId(Common.Models.DetectionResult detection)
         => ToRiichiSharp(detection.TileType)?.Id ?? -1;
+
+    /// <summary>获取 Tile Id，背牌/Unknown 返回 -1。</summary>
+    public static int GetTileId(TileType tileType)
+        => ToRiichiSharp(tileType)?.Id ?? -1;
 }

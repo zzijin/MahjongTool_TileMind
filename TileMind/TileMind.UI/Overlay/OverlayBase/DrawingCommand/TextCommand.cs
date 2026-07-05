@@ -1,11 +1,9 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+using TileMind.Common.Models;
 
 namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
 {
-    /// <summary>文本锚点的垂直位置。</summary>
-    public enum VerticalAnchor { Bottom, Top }
-
     public record class TextCommand : IDrawingCommand
     {
         public string Text { get; set; } = "";

@@ -20,7 +20,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace TileMind.Vision.Detection
 {
     /// <summary>
-    /// 高性能 YOLOv8 目标检测器，基于 Microsoft.ML.OnnxRuntime。
+    /// 高性能 YOLO 目标检测器，基于 Microsoft.ML.OnnxRuntime。
     /// </summary>
     public class YoloDetector : IDisposable
     {
@@ -45,7 +45,7 @@ namespace TileMind.Vision.Detection
         public YoloDetectTiming? LastTiming { get; private set; }
 
         /// <summary>
-        /// 初始化 YOLOv8 检测器。
+        /// 初始化 YOLO 检测器。
         /// </summary>
         /// <param name="modelPath">ONNX 模型文件路径。</param>
         /// <param name="classNames">类别名称数组，顺序需与模型训练时一致。</param>
@@ -89,7 +89,7 @@ namespace TileMind.Vision.Detection
             _session = new InferenceSession(opts.ModelPath, sessionOptions);
 
             // 获取模型元数据
-            // YOLOv8 模型通常只有一个名为 "images" 的输入
+            // YOLO 模型通常只有一个名为 "images" 的输入
             _inputName = _session.InputMetadata.Keys.First();
             var inputInfo = _session.InputMetadata[_inputName];
             var inputShape = inputInfo.Dimensions;
@@ -300,7 +300,7 @@ namespace TileMind.Vision.Detection
             var detections = new List<DetectionResult>();
 
             int numClasses = _classNames.Length;
-            // 判断输出形状：YOLOv8 常见为 (1, 84, 8400) 或 (1, 8400, 84)
+            // 判断输出形状：YOLO 常见为 (1, 84, 8400) 或 (1, 8400, 84)
             var dims = outputTensor.Dimensions;
             bool isChwLayout = dims[1] == 4 + numClasses; // 若第1维是84，则布局为 [1, 84, 8400]
             int dimensions = isChwLayout ? dims[1] : dims[2];

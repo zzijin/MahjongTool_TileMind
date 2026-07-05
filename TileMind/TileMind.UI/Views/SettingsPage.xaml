@@ -43,12 +43,20 @@
                 <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="覆盖层显示" />
                 <TextBlock Margin="0,6,0,0" Text="控制叠加层上各功能的显隐" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                 <StackPanel Margin="0,6,0,0">
-                    <TextBlock Margin="0,4,0,0" Text="覆盖层显示器编号" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Margin="0,4,0,0" Text="覆盖层显示器编号" FontWeight="SemiBold" FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding ViewModel.Overlay.OutputIndex}" Margin="0,2,0,4" />
                     <CheckBox Content="识别框显示" IsChecked="{Binding ViewModel.Overlay.ShowDetectionBoxes}" />
                     <CheckBox Content="识别区域显示" IsChecked="{Binding ViewModel.Overlay.ShowScreenRegions}" />
                     <CheckBox Content="耗时统计显示" IsChecked="{Binding ViewModel.Overlay.ShowTimingStats}" />
                     <CheckBox Content="牌型分析显示 (听牌/打牌推荐/得点)" IsChecked="{Binding ViewModel.Overlay.ShowWinningAnalysis}" />
+                    <StackPanel Orientation="Horizontal" Margin="20,2,0,4">
+                        <TextBlock Text="显示模式:" VerticalAlignment="Center" FontSize="12" Margin="0,0,6,0"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.WinningAnalysisMode, Converter={StaticResource AlignmentToIntConverter}}" Width="120">
+                            <ComboBoxItem Content="完整面板" />
+                            <ComboBoxItem Content="手牌上方" />
+                        </ComboBox>
+                    </StackPanel>
                     <CheckBox Content="牌堆剩余牌显示" IsChecked="{Binding ViewModel.Overlay.ShowRemainingTiles}" />
                     <CheckBox Content="动作记录显示（未实现）" IsEnabled="False" IsChecked="{Binding ViewModel.Overlay.ShowActionLog}" />
                     <CheckBox Content="AI决策显示（未实现）" IsEnabled="False" IsChecked="{Binding ViewModel.Overlay.ShowAIDecision}" />
@@ -72,6 +80,11 @@
                             <ComboBoxItem Content="中" />
                             <ComboBoxItem Content="右" />
                         </ComboBox>
+                        <TextBlock Text="垂直:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.TimingStatsDisplay.VerticalAnchor, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="底" />
+                            <ComboBoxItem Content="顶" />
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
 
@@ -88,6 +101,11 @@
                             <ComboBoxItem Content="左" />
                             <ComboBoxItem Content="中" />
                             <ComboBoxItem Content="右" />
+                        </ComboBox>
+                        <TextBlock Text="垂直:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.RemainingTilesDisplay.VerticalAnchor, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="底" />
+                            <ComboBoxItem Content="顶" />
                         </ComboBox>
                     </StackPanel>
                 </StackPanel>
@@ -106,6 +124,11 @@
                             <ComboBoxItem Content="中" />
                             <ComboBoxItem Content="右" />
                         </ComboBox>
+                        <TextBlock Text="垂直:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.WinningAnalysisDisplay.VerticalAnchor, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="底" />
+                            <ComboBoxItem Content="顶" />
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
 
@@ -123,6 +146,11 @@
                             <ComboBoxItem Content="中" />
                             <ComboBoxItem Content="右" />
                         </ComboBox>
+                        <TextBlock Text="垂直:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.ActionLogDisplay.VerticalAnchor, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="底" />
+                            <ComboBoxItem Content="顶" />
+                        </ComboBox>
                     </StackPanel>
                 </StackPanel>
 
@@ -139,6 +167,11 @@
                             <ComboBoxItem Content="左" />
                             <ComboBoxItem Content="中" />
                             <ComboBoxItem Content="右" />
+                        </ComboBox>
+                        <TextBlock Text="垂直:" VerticalAlignment="Center" Width="32" />
+                        <ComboBox SelectedIndex="{Binding ViewModel.Overlay.AIDecisionDisplay.VerticalAnchor, Converter={StaticResource AlignmentToIntConverter}}" Width="82">
+                            <ComboBoxItem Content="底" />
+                            <ComboBoxItem Content="顶" />
                         </ComboBox>
                     </StackPanel>
                 </StackPanel>
@@ -184,7 +217,7 @@
                 <!-- 融合参数 -->
                 <TextBlock Margin="0,28,0,0" FontSize="20" FontWeight="Medium" Text="融合参数" />
                 <StackPanel Margin="0,6,0,0">
-                    <CheckBox Content="启用多帧融合" IsChecked="{Binding ViewModel.Fusion.EnableFusion}" />
+                    <CheckBox Content="启用多帧融合(实验性)" IsChecked="{Binding ViewModel.Fusion.EnableFusion}" />
                     <TextBlock Margin="0,4,0,0" Text="融合帧数" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <TextBox Text="{Binding ViewModel.Fusion.MaxFusionFrameCount}" Margin="0,2,0,4" />
                     <TextBlock Margin="0,4,0,0" Text="场景变化阈值" FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}" />

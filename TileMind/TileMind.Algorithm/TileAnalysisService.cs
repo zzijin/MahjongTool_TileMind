@@ -45,7 +45,8 @@ public class TileAnalysisService
         if (shanten == 0)
         {
             int akaCount = HandStringBuilder.CountAkaDora(self.HandTiles);
-            FillWinOptions(result, self, handStr, calledMelds, visibleStr, akaCount);
+            var doraIndicators = BuildDoraIndicators(analysis.DoraIndicatorDetections);
+            FillWinOptions(result, self, handStr, calledMelds, visibleStr, akaCount, doraIndicators);
         }
         else if (shanten > 0)
         {
@@ -58,7 +59,8 @@ public class TileAnalysisService
 
     private static void FillWinOptions(
         TileAnalysisResult result, PlayerFrameAnalysis self,
-        string handStr, int calledMelds, string visibleStr, int akaCount)
+        string handStr, int calledMelds, string visibleStr, int akaCount,
+        List<RiichiSharp.Tiles.Tile> doraIndicators)
     {
         var tiles = RiichiSharp.Parse.TenhouParser.Parse(handStr);
         if (tiles == null) return;
@@ -74,37 +76,43 @@ public class TileAnalysisService
             string scoringHand = HandStringBuilder.BuildScoringHandString(self) +
                                  rsTile.Value.Number + SuitChar(rsTile.Value.Suit);
 
-            var ctx = new GameContext
+            // 分别计算自摸和荣和得点
+            foreach (var winType in new[] { WinType.Tsumo, WinType.Ron })
             {
-                WinType = WinType.Tsumo,
-                WinningTile = rsTile.Value,
-                RoundWind = RiichiSharp.Tiles.Tile.East,
-                SeatWind = RiichiSharp.Tiles.Tile.East,
-                AkaCount = akaCount,
-            };
+                var ctx = new GameContext
+                {
+                    WinType = winType,
+                    WinningTile = rsTile.Value,
+                    RoundWind = RiichiSharp.Tiles.Tile.East,
+                    SeatWind = RiichiSharp.Tiles.Tile.East,
+                    AkaCount = akaCount,
+                    DoraIndicators = doraIndicators,
+                };
 
-            try
-            {
-                var score = MahjongEngine.Score(scoringHand, ctx);
-                int remaining = result.RemainingCounts.GetValueOrDefault(winTile, 0);
-                result.WinOptions.Add(new WinOption
+                try
                 {
-                    WinTile = winTile,
-                    Remaining = remaining,
-                    Han = score.Han,
-                    Fu = score.FuTotal,
-                    Points = score.Points,
-                    YakuNames = score.YakuList?.Select(y => y.ToString()).ToList() ?? new()
-                });
-            }
-            catch (Exception ex)
-            {
-                DebugLog?.Invoke($"[TileAnalysis] Score failed for {winTile}: {ex.Message}");
-                result.WinOptions.Add(new WinOption
+                    var score = MahjongEngine.Score(scoringHand, ctx);
+                    int remaining = result.RemainingCounts.GetValueOrDefault(winTile, 0);
+                    result.WinOptions.Add(new WinOption
+                    {
+                        WinTile = winTile,
+                        Remaining = remaining,
+                        Han = score.Han,
+                        Fu = score.FuTotal,
+                        Points = score.Points,
+                        YakuNames = score.YakuList?.Select(y => y.ToString()).ToList() ?? new()
+                    });
+                }
+                catch (Exception ex)
                 {
-                    WinTile = winTile,
-                    Remaining = result.RemainingCounts.GetValueOrDefault(winTile, 0)
-                });
+                    DebugLog?.Invoke($"[TileAnalysis] Score({winType}) failed for {winTile}: {ex.Message}");
+                    int remaining = result.RemainingCounts.GetValueOrDefault(winTile, 0);
+                    result.WinOptions.Add(new WinOption
+                    {
+                        WinTile = winTile,
+                        Remaining = remaining
+                    });
+                }
             }
         }
     }
@@ -160,9 +168,11 @@ public class TileAnalysisService
                 AddKnown(known, det);
         }
 
-        // 宝牌指示牌
+        // 宝牌指示牌（指示牌和宝牌本身都在王牌区，都应从剩余牌中扣除）
         foreach (var det in analysis.DoraIndicatorDetections)
             AddKnown(known, det);
+        foreach (var dora in analysis.DoraTiles)
+            AddKnown(known, dora);
 
         var result = new Dictionary<TileType, int>();
         for (int i = 0; i < 34; i++)
@@ -171,9 +181,25 @@ public class TileAnalysisService
         return result;
     }
 
+    /// <summary>将宝牌指示牌检测结果转为 RiichiSharp Tile 数组。</summary>
+    private static List<RiichiSharp.Tiles.Tile> BuildDoraIndicators(List<Common.Models.DetectionResult> indicatorDets)
+    {
+        return indicatorDets
+            .Select(d => TileTypeMapper.ToRiichiSharp(d.TileType))
+            .Where(t => t != null)
+            .Select(t => t!.Value)
+            .ToList();
+    }
+
     private static void AddKnown(int[] known, Common.Models.DetectionResult det)
     {
         int id = TileTypeMapper.GetTileId(det);
+        if (id >= 0) known[id]++;
+    }
+
+    private static void AddKnown(int[] known, TileType tile)
+    {
+        int id = TileTypeMapper.GetTileId(tile);
         if (id >= 0) known[id]++;
     }
 

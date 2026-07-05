@@ -14,10 +14,15 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
         public PointCollection Points { get; set; } = new PointCollection();
         public bool IsClosed { get; set; } = true;
         public bool IsFilled { get; set; } = true;
+        public Brush? FillBrush { get; set; }
+        public Pen? StrokePen { get; set; }
 
         public void Draw(DrawingContext dc, Brush fillBrush, Pen strokePen)
         {
             if (Points.Count < 2) return;
+
+            var fill = FillBrush ?? fillBrush;
+            var pen = StrokePen ?? strokePen;
 
             var geometry = new StreamGeometry();
             using (var ctx = geometry.Open())
@@ -26,7 +31,7 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
                 var remaining = Points.Skip(1).ToList();
                 ctx.PolyLineTo(remaining, IsFilled, true);
             }
-            dc.DrawGeometry(IsFilled ? fillBrush : null, strokePen, geometry);
+            dc.DrawGeometry(IsFilled ? fill : null, pen, geometry);
         }
 
         public Rect GetBounds()

@@ -79,8 +79,14 @@ public static class HandStringBuilder
             }
         }
 
-        // 宝牌指示牌
+        // 宝牌指示牌 + 宝牌本身（都在王牌区，对 ukeire 计算可见）
         allVisible.AddRange(ToTiles(analysis.DoraIndicatorDetections));
+        foreach (var dora in analysis.DoraTiles)
+        {
+            var t = TileTypeMapper.ToRiichiSharp(dora);
+            if (t != null)
+                allVisible.AddRange(new[] { t.Value });
+        }
 
         return TilesToString(allVisible);
     }

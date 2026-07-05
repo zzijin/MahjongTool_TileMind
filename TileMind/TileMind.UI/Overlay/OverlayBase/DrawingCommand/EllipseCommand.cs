@@ -14,10 +14,12 @@ namespace TileMind.UI.Overlay.OverlayBase.DrawingCommand
         public Point Center { get; set; }
         public double RadiusX { get; set; }
         public double RadiusY { get; set; }
+        public Brush? FillBrush { get; set; }
+        public Pen? StrokePen { get; set; }
 
         public void Draw(DrawingContext dc, Brush fillBrush, Pen strokePen)
         {
-            dc.DrawEllipse(fillBrush, strokePen, Center, RadiusX, RadiusY);
+            dc.DrawEllipse(FillBrush ?? fillBrush, StrokePen ?? strokePen, Center, RadiusX, RadiusY);
         }
 
         public Rect GetBounds() => new Rect(
