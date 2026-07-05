@@ -95,3 +95,7 @@ mahjong_tool/
 | 多操作帧分析 | ⏳ 待实现 |
 | 对局记录导出（牌谱格式） | ⏳ 待实现 |
 | 单元测试 | ⏳ 待添加 |
+
+## License
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
