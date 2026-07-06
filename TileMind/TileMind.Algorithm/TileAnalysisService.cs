@@ -87,6 +87,8 @@ public class TileAnalysisService
                     SeatWind = RiichiSharp.Tiles.Tile.East,
                     AkaCount = akaCount,
                     DoraIndicators = doraIndicators,
+                    IsRiichi = false,     // TODO: 从 GameState 读取
+                    IsIppatsu = false,    // TODO: 从 GameState 读取
                 };
 
                 try
