@@ -151,3 +151,32 @@ TileMind/
 截取屏与覆盖屏可配置为不同显示器，覆盖层自动完成坐标映射，在主屏游戏时副屏同步显示识别结果。
 
 <table><tr><td><img src="Docs/Images/分屏功能-主屏游戏.png" alt="主屏"/></td><td><img src="Docs/Images/分屏功能-副屏绘制.png" alt="副屏"/></td></tr></table>
+
+## 待办
+
+### 调试与调优
+
+- **立直检测** — 弃牌区宽高比判定待实局验证，接入 `GameStateTracker`
+- **副露检测** — `HandMeldSeparator`/`DetermineMeldType`/`InferAnkans` 精度调优
+
+### 新功能
+
+- **InfoArea OCR** — 集成 ONNX OCR 模型识别场风、自风、分数、场信息
+- **一发/振听判定** — 接入 RiichiSharp 的 `IsIppatsu` 和 `FuritenDetector`
+- **调试录制与回放** — 录制每帧截图+检测+分析结果，人工标注后对比差异
+- **牌堆剩余牌显示优化** — 按花色分组、高亮、精简显示
+
+### 持续
+
+- **多操作帧分析**（5b/5c）
+- **副露触发牌位置** — 吃/碰组中横置牌的精确定位
+- **状态追踪调优** — 动作分类规则实局准确度验证
+- **对局记录导出**（牌谱格式）
+- **单元测试**
+
+### 性能优化
+
+- YOLO 输入 Tensor 预分配（复用 Buffer.Span）
+- ONNX 输出缓冲复用（`OrtValue` 原生缓冲）
+- OpenCV Mat 对象池
+- unsafe Span 零拷贝访问 Mat 数据
