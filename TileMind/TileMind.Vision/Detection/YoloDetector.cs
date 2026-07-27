@@ -12,6 +12,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using TileMind.Common.Config;
 using TileMind.Common.Models;
+using TileMind.Vision.Interop;
 using TileMind.Vision.Tools;
 using static System.Collections.Specialized.BitVector32;
 using static System.Net.Mime.MediaTypeNames;
@@ -269,14 +270,15 @@ namespace TileMind.Vision.Detection
             int offsetG = 1 * channelStride;
             int offsetB = 2 * channelStride;
 
-            // 将图像数据复制到张量中 (CHW 格式)
+            // 将图像数据复制到张量中 (CHW 格式)，使用 unsafe Span 零拷贝访问 Mat 底层数据
+            var pixelSpan = MatSpanInterop.AsVec3fSpan(rgbImage);
             for (int y = 0; y < _inputHeight; y++)
             {
                 int rowOffset = y * _inputWidth;
+                int srcRowOffset = y * _inputWidth;
                 for (int x = 0; x < _inputWidth; x++)
                 {
-
-                    var pixel = rgbImage.At<Vec3f>(y, x);
+                    ref var pixel = ref pixelSpan[srcRowOffset + x];
                     int pixelIndex = rowOffset + x;
                     tensorSpan[offsetR + pixelIndex] = T.CreateSaturating(pixel.Item0);
                     tensorSpan[offsetG + pixelIndex] = T.CreateSaturating(pixel.Item1);

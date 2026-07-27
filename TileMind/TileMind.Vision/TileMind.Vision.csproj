@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TileMind.Common\TileMind.Common.csproj" />
+    <ProjectReference Include="..\TileMind.Vision.Interop\TileMind.Vision.Interop.csproj" />
   </ItemGroup>
 
 </Project>
