@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Drawing;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using OpenCvSharp;
 using TileMind.Common.Config;
@@ -81,10 +82,7 @@ namespace TileMind.Vision.ScreenCapture
                     FusionResult = fusionResult
                 });
 
-                while (_frameCache.Count > _fusionFrameCount)
-                {
-                    _frameCache.TryDequeue(out _);
-                }
+                EnforceCacheLimit();
             }
 
             return fusionResult;
@@ -136,7 +134,7 @@ namespace TileMind.Vision.ScreenCapture
 
             // 4. Run YOLO detection on all frames in parallel, collect sub-timings
             stepSw.Restart();
-            double yoloPreprocessMs = 0, yoloInferenceMs = 0, yoloPostprocessMs = 0;
+            long preprocessTicks = 0, inferenceTicks = 0, postprocessTicks = 0;
             var detectionTasks = frames.Select(frame =>
                 Task.Run<List<DetectionResult>>(async () =>
                 {
@@ -148,9 +146,9 @@ namespace TileMind.Vision.ScreenCapture
                         var t = detector.LastTiming;
                         if (t != null)
                         {
-                            yoloPreprocessMs += t.PreprocessMs;
-                            yoloInferenceMs += t.InferenceMs;
-                            yoloPostprocessMs += t.PostprocessMs;
+                            Interlocked.Add(ref preprocessTicks, (long)(t.PreprocessMs * TimeSpan.TicksPerMillisecond));
+                            Interlocked.Add(ref inferenceTicks, (long)(t.InferenceMs * TimeSpan.TicksPerMillisecond));
+                            Interlocked.Add(ref postprocessTicks, (long)(t.PostprocessMs * TimeSpan.TicksPerMillisecond));
                         }
                         return result;
                     }
@@ -164,6 +162,9 @@ namespace TileMind.Vision.ScreenCapture
 
             var allFrameResults = Task.WhenAll(detectionTasks).Result;
             double detectMs = stepSw.Elapsed.TotalMilliseconds;
+            double yoloPreprocessMs = preprocessTicks / (double)TimeSpan.TicksPerMillisecond;
+            double yoloInferenceMs = inferenceTicks / (double)TimeSpan.TicksPerMillisecond;
+            double yoloPostprocessMs = postprocessTicks / (double)TimeSpan.TicksPerMillisecond;
 
             // 5. Fuse or take single result
             stepSw.Restart();

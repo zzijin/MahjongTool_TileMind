@@ -55,24 +55,26 @@ public class ActionClassifier
                 Player = seat,
                 Tiles = delta.HandAdded.ToList()
             });
+            return actions;
+        }
 
-            if (handDiff == 1 && delta.PondAdded.Count == 1)
+        // 1b. 摸牌+出牌同帧（net handDiff==0, Pond+1, 手牌同时有增减）: 拆为 Draw + Discard
+        if (handDiff == 0 && delta.PondAdded.Count == 1
+            && delta.MeldsAdded.Count == 0
+            && delta.HandAdded.Count > 0 && delta.HandRemoved.Count > 0)
+        {
+            actions.Add(new MahjongAction
             {
-                // 手切或摸切：同时有摸牌和出牌
-                actions.Add(new MahjongAction
-                {
-                    ActionType = ActionType.Draw,
-                    Player = seat,
-                    Tiles = delta.HandAdded.ToList()
-                });
-                actions.Add(new MahjongAction
-                {
-                    ActionType = ActionType.Discard,
-                    Player = seat,
-                    Tiles = delta.PondAdded.ToList()
-                });
-            }
-
+                ActionType = ActionType.Draw,
+                Player = seat,
+                Tiles = delta.HandAdded.ToList()
+            });
+            actions.Add(new MahjongAction
+            {
+                ActionType = ActionType.Discard,
+                Player = seat,
+                Tiles = delta.PondAdded.ToList()
+            });
             return actions;
         }
 

@@ -28,8 +28,6 @@ namespace TileMind.Vision.Detection
         private readonly int _maxPoolSize = 6; // 最大池大小，确保池不会无限增长
         private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5); // 获取实例的默认超时时间
         private readonly SemaphoreSlim _semaphore;
-        //写入锁，确保在创建新实例时不会超过最大池大小
-        private readonly object _writeLocker = new object();
         private bool _disposed;
 
         public YoloDetectorPoolService(YoloOptions options, ILogger<YoloDetectorPoolService> poolLogger, ILogger<YoloDetector> detectorLogger)
@@ -63,6 +61,7 @@ namespace TileMind.Vision.Detection
             {
                 return detector;
             }
+            _semaphore.Release();
             return null;
         }
 
@@ -74,43 +73,17 @@ namespace TileMind.Vision.Detection
             if (!await _semaphore.WaitAsync(effectiveTimeout).ConfigureAwait(false))
                 return null;
 
+            // 先尝试从池中取已有对象
+            if (_pool.TryTake(out var detector))
+                return detector;
+
+            // 池空 → 创建新实例返回，由 Return() 负责入池
             try
             {
-                // 先尝试从池中取已有对象
-                if (_pool.TryTake(out var detector))
-                    return detector;
-
-                try
-                {
-                    lock (_writeLocker)
-                    {
-                        // 创建新对象
-                        var newDetector = new YoloDetector(_options, _detectorLogger);
-
-                        //暂不使用，在未达最大池时，优先创建新对象
-                        ////双重检查，避免在构造期间其他线程归还对象或创建新对象
-                        //if (_pool.TryTake(out detector))
-                        //{
-                        //    newDetector.Dispose(); // 释放多余资源
-                        //    return detector;
-                        //}
-                        //else
-                        //    newDetector.Dispose();
-
-                        _pool.Add(newDetector);
-                        _semaphore.Release();
-
-                        return newDetector;
-                    }
-                }
-                catch
-                {
-                    throw;
-                }
+                return new YoloDetector(_options, _detectorLogger);
             }
             catch
             {
-                // 构造或添加过程中发生异常，必须释放信号量
                 _semaphore.Release();
                 return null;
             }
