@@ -25,6 +25,7 @@ namespace TileMind.Core.Services
                     .AddJsonFile(GameStateTrackerOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .AddJsonFile(PipelineOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .AddJsonFile(OverlayOptions.SettingFilePath, optional: true, reloadOnChange: true)
+                    .AddJsonFile(OcrOptions.SettingFilePath, optional: true, reloadOnChange: true)
                     .Build();
 
                 services.AddSingleton<IConfiguration>(config);
@@ -44,6 +45,8 @@ namespace TileMind.Core.Services
                     PipelineOptions.SettingFilePath) ?? new PipelineOptions());
                 services.AddSingleton(SettingConfigExtensions.Load<OverlayOptions>(
                     OverlayOptions.SettingFilePath) ?? new OverlayOptions());
+                services.AddSingleton(SettingConfigExtensions.Load<OcrOptions>(
+                    OcrOptions.SettingFilePath) ?? new OcrOptions());
 
                 var screenOpts = SettingConfigExtensions.Load<ScreenCaptureOptions>(
                     ScreenCaptureOptions.SettingFilePath) ?? new ScreenCaptureOptions();
@@ -72,6 +75,9 @@ namespace TileMind.Core.Services
 
                 //注册显示器服务
                 services.AddSingleton<MonitorService>();
+
+                //注册 OCR 引擎
+                services.AddSingleton<TileMind.Vision.OCR.OcrEngine>();
 
                 //注册视觉服务
                 services.AddScoped<YoloDetectorPoolService>();

@@ -27,6 +27,12 @@ public static class MatSpanInterop
     }
 
     /// <summary>
+    /// 从单通道 CV_32FC1 Mat 获取 Span&lt;float&gt;。
+    /// </summary>
+    public static unsafe Span<float> AsFloatSpan(Mat mat, int length)
+        => new((void*)mat.DataPointer, length);
+
+    /// <summary>
     /// 从 Mat 获取原始 byte Span。调用方负责保证 Mat 在使用期间不被释放。
     /// </summary>
     /// <param name="byteCount">期望的字节数（Width * Height * Channels * sizeof(element)）</param>
