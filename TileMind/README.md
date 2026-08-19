@@ -161,7 +161,7 @@ TileMind/
 
 ### 新功能
 
-- **InfoArea OCR** — 集成 ONNX OCR 模型识别场风、自风、分数、场信息
+- **InfoArea OCR** — OCR 引擎已完成（`TileMind.Vision/OCR/`，已注册 DI）；剩余：接入流水线解析场风、自风、分数、场信息
 - **一发/振听判定** — 接入 RiichiSharp 的 `IsIppatsu` 和 `FuritenDetector`
 - **调试录制与回放** — 录制每帧截图+检测+分析结果，人工标注后对比差异
 - **牌堆剩余牌显示优化** — 按花色分组、高亮、精简显示
@@ -179,4 +179,4 @@ TileMind/
 - YOLO 输入 Tensor 预分配（复用 Buffer.Span）
 - ONNX 输出缓冲复用（`OrtValue` 原生缓冲）
 - OpenCV Mat 对象池
-- unsafe Span 零拷贝访问 Mat 数据
+- ~~unsafe Span 零拷贝访问 Mat 数据~~ ✅ 已完成（`TileMind.Vision.Interop`）
